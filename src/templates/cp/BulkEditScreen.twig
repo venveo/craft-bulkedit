@@ -1,0 +1,38 @@
+{% extends '_layouts/cp' %}
+{% set title = 'Bulk Edit' %}
+
+{% set fullPageForm = true %}
+{% block header %}
+  <div class="flex-grow"></div>
+  {{ block('actionButton') }}
+{% endblock %}
+
+{% block actionButton %}
+  <input type="hidden" name="action" value="bulkedit/bulk-edit/save-context">
+
+  <div class="btngroup">
+    <input type="submit" class="btn submit" value="{{ 'Start Job'|t('app') }}">
+  </div>
+  {{ redirectInput('') }}
+{% endblock %}
+
+{% set content %}
+      {{ csrfInput() }}
+      {% for elementId in elementIds %}
+        <input type="hidden" name="elementIds[]" value="{{ elementId }}">
+      {% endfor %}
+      <input type="hidden" name="siteId" value="{{ siteId }}">
+      {% for field in fields %}
+        <input type="hidden" name="fieldIds[]" value="{{ field.id }}">
+        <div class="pane">
+          {% namespace 'fields' %}
+          {% include "_includes/field" with {
+            field:    field,
+            required: true,
+            element:  null,
+            static:   (static is defined ? static : null)
+          } only %}
+          {% endnamespace %}
+        </div>
+      {% endfor %}
+{% endset %}

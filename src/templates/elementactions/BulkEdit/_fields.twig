@@ -1,0 +1,67 @@
+{% import '_includes/forms' as forms %}
+
+<div class="bulkedit field-edit-modal">
+  <h2>Select Fields</h2>
+  <p>Editing <strong>{{ elementIds|length }}</strong> elements on site <strong>{{ site.name }} ({{ site.language }})</strong></p>
+  <p>Select the fields you would like to edit:</p>
+  {% if layouts|length %}
+    <form action="" method="post" accept-charset="UTF-8">
+      {{ csrfInput() }}
+      <input type="hidden" name="action"
+             value="bulkedit/bulk-edit/edit">
+      {% for elementId in elementIds %}
+      <input type="hidden" name="elementIds[]" value="{{ elementId }}">
+      {% endfor %}
+      <input type="hidden" name="siteId" value="{{ site.id }}">
+  <table class="data fullwidth" id="fields-table">
+    <thead>
+    <th scope="col" class="col-header">
+        <span class="heading-text">
+            Field Name
+        </span>
+    </th>
+    <th scope="col" class="col-header">
+        <span class="heading-text">
+            Field Handle
+        </span>
+    </th>
+    <th scope="col" class="col-header">
+        <span class="heading-text">
+            Edit
+        </span>
+    </th>
+    </thead>
+    {% for layout in layouts %}
+      {% for fieldlayoutfield in layout.fields %}
+        {% set field = fieldlayoutfield.field %}
+        <tr>
+          <td>
+            <span>
+                {{ field.name | t('site') }} {% if field.instructions %}<span class="info">{{ field.instructions | t('site') | md | raw }}</span>{% endif %}
+            </span>
+          </td>
+          <td><span>{{ field.handle }}</span></td>
+          <td><span>
+            {{ forms.lightswitchField({
+              id: 'fieldEnabled-'~field.handle,
+              name: 'fieldIds[]',
+              on: false,
+              value: field.id,
+            }) }}
+            </span>
+          </td>
+        </tr>
+      {% endfor %}
+    {% endfor %}
+  </table>
+
+  <div class="field-edit-modal-bar">
+    <div class="buttons right">
+      <div class="btn" id="field-edit-cancel">Cancel</div>
+      <input type="submit" value="Continue" disabled class="btn submit disabled"></div>
+  </div>
+  </form>
+  {% else %}
+    <p>These elements have no fields associated with them.</p>
+  {% endif %}
+</div>
