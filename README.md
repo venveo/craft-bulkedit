@@ -1,6 +1,8 @@
 # Bulk Edit plugin for Craft CMS 3.x
+This plugin is built to offer extended editing functionality of a set of Craft elements.
 
-Bulk edit entries
+## Steps to use:
+1. Select the subset of entries you would like to edit
 
 ![Screenshot](resources/img/plugin-logo.png)
 
@@ -18,7 +20,7 @@ To install the plugin, follow these instructions.
 
 2. Then tell Composer to load the plugin:
 
-        composer require venveo/bulk-edit
+        composer require venveo/craft-bulkedit
 
 3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Bulk Edit.
 
