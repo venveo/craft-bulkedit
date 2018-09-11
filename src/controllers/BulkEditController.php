@@ -35,19 +35,6 @@ use yii\db\Transaction;
 use yii\web\BadRequestHttpException;
 
 /**
- * BulkEdit Controller
- *
- * Generally speaking, controllers are the middlemen between the front end of
- * the CP/website and your plugin’s services. They contain action methods which
- * handle individual tasks.
- *
- * A common pattern used throughout Craft involves a controller action gathering
- * post data, saving it on a model, passing the model off to a service, and then
- * responding to the request appropriately depending on the service method’s response.
- *
- * Action methods begin with the prefix “action”, followed by a description of what
- * the method does (for example, actionSaveIngredient()).
- *
  * https://craftcms.com/docs/plugins/controllers
  *
  * @author    Venveo
@@ -91,32 +78,6 @@ class BulkEditController extends Controller
             'elementIds' => $elementIds,
             'site' => $site
         ]);
-//
-//        if (!$asset->getSupportsPreview()) {
-//            $modalHtml = '<p class="nopreview centeralign" style="top: calc(50% - 10px) !important; position: relative;">' . Craft::t('app', 'Preview not available.') . '</p>';
-//        } else {
-//            if ($asset->kind === 'image') {
-//                /** @var Volume $volume */
-//                $volume = $asset->getVolume();
-//
-//                if ($volume->hasUrls) {
-//                    $imageUrl = $asset->getUrl();
-//                } else {
-//                    $source = $asset->getTransformSource();
-//                    $imageUrl = Craft::$app->getAssetManager()->getPublishedUrl($source, true);
-//                }
-//
-//                $width = $asset->getWidth();
-//                $height = $asset->getHeight();
-//                $modalHtml = "<img src=\"$imageUrl\" width=\"{$width}\" height=\"{$height}\" data-maxWidth=\"{$width}\" data-maxHeight=\"{$height}\"/>";
-//            } else {
-//                $localCopy = $asset->getCopyOfFile();
-//                $content = htmlspecialchars(file_get_contents($localCopy));
-//                $language = $asset->kind === Asset::KIND_HTML ? 'markup' : $asset->kind;
-//                $modalHtml = '<div class="highlight ' . $asset->kind . '"><pre><code class="language-' . $language . '">' . $content . '</code></pre></div>';
-//                unlink($localCopy);
-//            }
-//        }
 
         return $this->asJson([
             'success' => true,
@@ -148,13 +109,11 @@ class BulkEditController extends Controller
         }
 
 
-
-
         $view = Craft::$app->getView();
         $view->registerAssetBundle(BulkEditScreenAsset::class);
 
         /*
-        TODO: Finish field layout emulation for certain custom field types
+        TODO: Finish field layout emulation for certain custom field types that require a valid Element interface
         // We need to create a temporary field layout and tab with all of our
         // fields on it.
         $fieldLayout = new FieldLayout();
@@ -286,7 +245,7 @@ class BulkEditController extends Controller
         ]);
         \Craft::$app->getQueue()->push($job);
 
-        \Craft::$app->session->setFlash('notice', "Bulk Edit job started");
+        \Craft::$app->session->setFlash('notice', 'Bulk Edit job started');
         return $this->redirectToPostedUrl();
     }
 }
