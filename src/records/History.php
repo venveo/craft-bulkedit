@@ -10,7 +10,7 @@ use craft\records\Site;
 use yii\db\ActiveQueryInterface;
 
 /**
- * @property mixed fieldId
+ * @property integer fieldId
  * @property string status
  * @property \yii\db\ActiveQueryInterface $element
  * @property \yii\db\ActiveQueryInterface $context
@@ -18,7 +18,8 @@ use yii\db\ActiveQueryInterface;
  * @property Site $site
  * @property integer id
  * @property string originalValue
- * @property mixed newValue
+ * @property string newValue
+ * @property integer elementId
  */
 class History extends ActiveRecord
 {

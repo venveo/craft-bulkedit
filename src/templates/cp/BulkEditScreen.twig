@@ -29,7 +29,8 @@
           {% include "_includes/field" with {
             field:    field,
             required: true,
-            element:  null,
+            siteId: siteId,
+            element:  baseElement,
             static:   (static is defined ? static : null)
           } only %}
           {% endnamespace %}

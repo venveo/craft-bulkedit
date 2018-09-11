@@ -10,6 +10,7 @@
 
 namespace venveo\bulkedit\services;
 
+use Craft;
 use craft\elements\actions\Edit;
 use craft\records\Element;
 use craft\records\FieldLayout;
@@ -95,19 +96,38 @@ class BulkEdit extends Component
         return $items;
     }
 
-    public function processHistoryItemsForElement($historyItems, \craft\base\Element $element) {
-        /** @var History $historyItem */
-        foreach($historyItems as $historyItem) {
-            try {
+    /**
+     * Takes an array of history changes for a particular element and saves it to that element.
+     * @param $historyItems
+     * @param \craft\base\Element $element
+     * @return \craft\base\Element
+     * @throws \Throwable
+     * @throws \yii\base\Exception
+     */
+    public function processHistoryItemsForElement($historyItems, \craft\base\Element $element)
+    {
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            foreach ($historyItems as $historyItem) {
                 $historyItem->originalValue = \GuzzleHttp\json_encode($element->getFieldValue($historyItem->field->handle));
                 $historyItem->status = 'completed';
                 $element->setFieldValue($historyItem->field->handle, \GuzzleHttp\json_decode($historyItem->newValue));
-                $historyItem->save(false);
-            } catch (\Exception $e) {
-                die($e->getMessage());
+                $historyItem->save();
+                Craft::info('Saved history item', __METHOD__);
             }
+            \Craft::$app->elements->saveElement($element, false);
+            Craft::info('Saved element', __METHOD__);
+            $transaction->commit();
+            return $element;
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            Craft::error('Transaction rolled back', __METHOD__);
+            throw $e;
         }
-        \Craft::$app->elements->saveElement($element);
-        return $element;
+    }
+
+
+    public function tryToSaveVersion(\craft\base\Element $element, $context) {
+        // TODO Save a version and store the version ID somewhere
     }
 }

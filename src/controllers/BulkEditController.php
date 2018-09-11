@@ -10,9 +10,15 @@
 
 namespace venveo\bulkedit\controllers;
 
-use craft\models\FieldLayout;
+use craft\elements\Entry;
+use craft\models\EntryType;
+use craft\records\FieldLayout;
 use craft\records\Element;
 use craft\records\Field;
+use craft\records\FieldLayoutField;
+use craft\records\FieldLayoutTab;
+use craft\records\Section;
+use craft\records\Section_SiteSettings;
 use craft\web\Response;
 use Ramsey\Uuid\Uuid;
 use venveo\bulkedit\assetbundles\bulkeditscreen\BulkEditScreenAsset;
@@ -25,6 +31,7 @@ use venveo\bulkedit\queue\jobs\SaveBulkEditJob;
 use venveo\bulkedit\records\EditContext;
 use venveo\bulkedit\records\History;
 use venveo\bulkedit\services\BulkEdit as BulkEditService;
+use yii\db\Transaction;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -123,24 +130,102 @@ class BulkEditController extends Controller
         $this->requirePostRequest();
         $elementIds = array_values(Craft::$app->getRequest()->getRequiredParam('elementIds'));
         $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
-        $fieldIds = array_values(Craft::$app->getRequest()->getRequiredParam('fieldIds'));
+        $fieldIds = array_values(array_filter(Craft::$app->getRequest()->getRequiredParam('fieldIds')));
 
         $site = Craft::$app->getSites()->getSiteById($siteId);
-        $elements = Element::findAll($elementIds);
-        $fields = Field::findAll($fieldIds);
-
-        $fieldModels = [];
-        /** @var Field $field */
-        foreach($fields as $field) {
-            $fieldModels[] = \Craft::$app->fields->getFieldById($field->id);
+        if (!$site) {
+            throw new \Exception('Site does not exist');
         }
+
+        $fields = Field::findAll($fieldIds);
+        if (count($fields) !== count($fieldIds)) {
+            throw new \Exception('Could not find all fields requested');
+        }
+
+        $elements = Element::findAll($elementIds);
+        if (count($elements) !== count($elementIds)) {
+            throw new \Exception('Could not find all elements requested');
+        }
+
+
+
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(BulkEditScreenAsset::class);
 
+        /*
+        TODO: Finish field layout emulation for certain custom field types
+        // We need to create a temporary field layout and tab with all of our
+        // fields on it.
+        $fieldLayout = new FieldLayout();
+        $fieldLayout->type = Entry::class;
+        $fieldLayout->save();
+        $fieldTab = new FieldLayoutTab();
+        $fieldTab->layoutId = $fieldLayout->id;
+        $fieldTab->name = 'Temp - Bulk Edit';
+        $fieldTab->save();
+
+        */
+        $transaction = \Craft::$app->db->beginTransaction(Transaction::SERIALIZABLE);
+
+        $transaction->begin();
+        try {
+            $fieldModels = [];
+            /** @var Field $field */
+            foreach ($fields as $field) {
+                $fieldModel = \Craft::$app->fields->getFieldById($field->id);
+                $fieldModels[] = $fieldModel;
+                /* TODO: Finish field layout emulation...
+                $fieldLayoutField = new FieldLayoutField();
+                $fieldLayoutField->layoutId = $fieldLayout->id;
+                $fieldLayoutField->tabId = $fieldTab->id;
+                $fieldLayoutField->required = 1;
+                $fieldLayoutField->fieldId = $field->id;
+                $fieldLayoutField->save();
+                */
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+        $transaction->commit();
+
+        /*
+         * TODO: Finish field layout emulation
+
+        $section = new \craft\models\Section();
+        $section->type = 'single';
+        $section->enableVersioning = 0;
+        $section->propagateEntries = 0;
+        $section->handle = 'BULK_EDIT_DELETE_ME';
+        $section->name = 'BULK_EDIT_DELETE_ME';
+
+        $siteSettings = new \craft\models\Section_SiteSettings();
+        $siteSettings->siteId = $site->id;
+        $siteSettings->hasUrls = false;
+        $siteSettings->uriFormat = null;
+        $siteSettings->template = null;
+        $section->setSiteSettings([$siteSettings]);
+        \Craft::$app->sections->saveSection($section, false);
+
+        // Some custom field types require a sacrificial element.
+        // We'll feed it an Entry.
+        $entryType = $section->getEntryTypes()[0];
+
+        $baseEntry = new Entry();
+        $baseEntry->authorId = Craft::$app->getUser()->getIdentity()->id;
+        $baseEntry->typeId = $entryType->id;
+        $baseEntry->sectionId = $section->id;
+        $baseEntry->enabled = true;
+        $baseEntry->siteId = $siteId;
+        */
+        // This is going to break some field types.
+        $baseEntry = null;
+
         return $this->renderTemplate('bulkedit/cp/BulkEditScreen', [
             'fields' => $fieldModels,
             'elementIds' => $elementIds,
+            'baseElement' => $baseEntry,
             'siteId' => $siteId
         ]);
     }
