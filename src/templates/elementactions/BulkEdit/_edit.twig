@@ -1,0 +1,30 @@
+{% import '_includes/forms' as forms %}
+
+<div class="bulkedit field-edit-modal">
+  <form id="bulk-edit-values-modal">
+  {% for elementId in elementIds %}
+    <input type="hidden" name="elementIds[]" value="{{ elementId }}">
+  {% endfor %}
+  <input type="hidden" name="siteId" value="{{ site.id }}">
+  {% for field in fields %}
+    <input type="hidden" name="fieldIds[]" value="{{ field.id }}">
+    <div class="pane">
+      {% namespace 'fields' %}
+        {% include "_includes/field" with {
+          field:    field,
+          required: true,
+          siteId: site.id,
+          element:  baseElement,
+          static:   (static is defined ? static : null)
+        } only %}
+      {% endnamespace %}
+    </div>
+  {% endfor %}
+
+  <div class="field-edit-modal-bar">
+    <div class="buttons right">
+      <div class="btn" id="field-edit-cancel">Cancel</div>
+      <input type="submit" value="Save {{ elementIds|length }} Elements" class="btn submit"></div>
+  </div>
+  </form>
+</div>

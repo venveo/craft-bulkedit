@@ -1,5 +1,6 @@
 /** global: Craft */
 /** global: Garnish */
+/** global: $ */
 
 /**
  * Select Fields Modal
@@ -7,6 +8,7 @@
 Craft.BulkEditModal = Garnish.Modal.extend(
     {
         $spinner: null,
+        siteId: null,
         elementIds: [],
         fieldIds: [],
         type: null,
@@ -36,7 +38,7 @@ Craft.BulkEditModal = Garnish.Modal.extend(
             this.$container = $('<div id="select-fields-modal" class="modal loading"/>').appendTo(Garnish.$bod);
 
             this.base(this.$container, $.extend({
-                resizable: true
+                resizable: false
             }, settings));
 
             // Cut the flicker, just show the nice person the preview.
@@ -51,6 +53,41 @@ Craft.BulkEditModal = Garnish.Modal.extend(
             this.loadFields(elementIds)
         },
 
+        loadFieldEditor: function(fieldIds) {
+            Craft.postActionRequest('bulkedit/bulk-edit/get-edit-screen', {
+                elementIds: this.elementIds,
+                siteId: this.siteId,
+                requestId: this.requestId,
+                fieldIds: fieldIds
+            }, function(response, textStatus) {
+                if (textStatus === 'success') {
+                    if (response.success) {
+                        if (response.requestId != this.requestId) {
+                            return;
+                        }
+                        this.$container.removeClass('loading');
+                        this.$spinner.remove();
+                        this.loaded = true;
+                        this.$container.append(response.modalHtml);
+                        Craft.initUiElements(this.$container);
+                        this._unbindEventHandlersForFieldSelect();
+                        this._bindEventHandlersForFieldEditor();
+                    } else {
+                        alert(response.error);
+                        this.hide();
+                    }
+                }
+            }.bind(this));
+        },
+
+        _initSpinner() {
+            this.$container.addClass('loading');
+            this.$spinner = $('<div class="spinner centeralign"></div>').appendTo(this.$container);
+            var top = (this.$container.height() / 2 - this.$spinner.height() / 2) + 'px',
+                left = (this.$container.width() / 2 - this.$spinner.width() / 2) + 'px';
+
+            this.$spinner.css({left: left, top: top, position: 'absolute'});
+        },
 
         /**
          * Load an asset, using starting width and height, if applicable
@@ -59,12 +96,7 @@ Craft.BulkEditModal = Garnish.Modal.extend(
          * @param startingHeight
          */
         loadFields: function(elementIds) {
-
-            this.$spinner = $('<div class="spinner centeralign"></div>').appendTo(this.$container);
-            var top = (this.$container.height() / 2 - this.$spinner.height() / 2) + 'px',
-                left = (this.$container.width() / 2 - this.$spinner.width() / 2) + 'px';
-
-            this.$spinner.css({left: left, top: top, position: 'absolute'});
+            this._initSpinner();
             this.requestId++;
 
             Craft.postActionRequest('bulkedit/bulk-edit/get-fields', {elementIds: elementIds, requestId: this.requestId}, function(response, textStatus) {
@@ -79,25 +111,63 @@ Craft.BulkEditModal = Garnish.Modal.extend(
 
                         this.loaded = true;
                         this.$container.append(response.modalHtml);
+                        this.elementIds = response.elementIds;
+                        this.siteId = response.siteId;
                         Craft.initUiElements(this.$container);
-                        this._bindEventHandlers();
+                        this._bindEventHandlersForFieldSelect();
                     } else {
                         alert(response.error);
-
                         this.hide();
                     }
                 }
             }.bind(this));
         },
 
-        _bindEventHandlers: function() {
+
+        _bindEventHandlersForFieldEditor: function() {
             this.$container.find('#field-edit-cancel').on('click', this.hide.bind(this));
-            this.$container.find('#fields-table .lightswitch').on('change', this._handleFieldSelect.bind(this));
+            this.$container.find('.submit').on('click', this._handleFieldEditorSubmit.bind(this));
         },
 
-        _unbindEventHandlers: function() {
+        _unbindEventHandlersForFieldEditor: function() {
+            this.$container.find('#field-edit-cancel').off('click', this.hide.bind(this));
+            this.$container.find('.submit').off('click', this._handleFieldEditorSubmit.bind(this));
+        },
+
+        _bindEventHandlersForFieldSelect: function() {
+            this.$container.find('#field-edit-cancel').on('click', this.hide.bind(this));
+            this.$container.find('#fields-table .lightswitch').on('change', this._handleFieldSelect.bind(this));
+            this.$container.find('.submit').on('click', this._handleFieldSelectSubmit.bind(this));
+        },
+
+        _unbindEventHandlersForFieldSelect: function() {
             this.$container.find('#field-edit-cancel').off('click', this.hide.bind(this));
             this.$container.find('#fields-table .lightswitch').off('change', this._handleFieldSelect.bind(this));
+        },
+
+        _getCheckedFields: function() {
+            let values = []
+            this.$container.find('.lightswitch.on > input').each(function() {
+                values.push($(this).val())
+            });
+            return values;
+        },
+
+        _handleFieldEditorSubmit: function(e) {
+            this.$container.find('.submit').attr('disabled', 'disabled');
+            this.$container.find('.submit').addClass('disabled')
+            const formValues = $container.find('#bulk-edit-values-modal').serializeArray();
+            Craft.postActionRequest('bulkedit/bulk-edit/save-context', formValues, function(response) {
+                this.hide();
+            }.bind(this));
+        },
+
+        _handleFieldSelectSubmit: function(e) {
+            e.preventDefault();
+            const fieldIds = this._getCheckedFields();
+            this.$container.find('.field-edit-modal').remove();
+            this._initSpinner();
+            this.loadFieldEditor(fieldIds);
         },
 
         _handleFieldSelect: function(e) {
@@ -135,8 +205,8 @@ Craft.BulkEditModal = Garnish.Modal.extend(
         _onHide: function() {
             Craft.BulkEditModal.openInstance = null;
             this.$shade.remove();
-            this._unbindEventHandlers();
-
+            this._unbindEventHandlersForFieldSelect();
+            this._unbindEventHandlersForFieldEditor();
             return this.destroy();
         },
 
