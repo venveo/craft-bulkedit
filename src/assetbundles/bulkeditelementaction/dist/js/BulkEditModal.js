@@ -156,7 +156,7 @@ Craft.BulkEditModal = Garnish.Modal.extend(
         _handleFieldEditorSubmit: function(e) {
             this.$container.find('.submit').attr('disabled', 'disabled');
             this.$container.find('.submit').addClass('disabled')
-            const formValues = $container.find('#bulk-edit-values-modal').serializeArray();
+            const formValues = this.$container.find('#bulk-edit-values-modal').serializeArray();
             Craft.postActionRequest('bulkedit/bulk-edit/save-context', formValues, function(response) {
                 this.hide();
             }.bind(this));
