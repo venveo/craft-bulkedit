@@ -42,14 +42,6 @@ use yii\web\BadRequestHttpException;
  */
 class BulkEditController extends Controller
 {
-
-    // Protected Properties
-    // =========================================================================
-
-
-    // Public Methods
-    // =========================================================================
-
     /**
      * Return the file preview for an Asset.
      *
@@ -135,6 +127,8 @@ class BulkEditController extends Controller
         $baseEntry = null;
         $view = \Craft::$app->getView();
 
+//        $baseElements = BulkEdit::$plugin->bulkEdit->getBaseElementForFieldIds($fieldIds);
+
         $modalHtml = $view->renderTemplate('bulkedit/elementactions/BulkEdit/_edit', [
             'fields' => $fieldModels,
             'elementIds' => $elementIds,
@@ -175,7 +169,7 @@ class BulkEditController extends Controller
                     $fieldId = $field->id;
                 }
             }
-            if (!$fieldId) {
+            if ($fieldId === null) {
                 throw new \Exception('Failed to locate field');
             }
             $keyedFieldValues[$fieldId] = $value;

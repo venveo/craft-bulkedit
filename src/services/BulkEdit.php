@@ -11,7 +11,11 @@
 namespace venveo\bulkedit\services;
 
 use Craft;
+use craft\base\Field;
 use craft\elements\actions\Edit;
+use craft\elements\Category;
+use craft\elements\Entry;
+use craft\models\FieldGroup;
 use craft\records\Element;
 use craft\records\FieldLayout;
 use venveo\bulkedit\BulkEdit as Plugin;
@@ -57,6 +61,15 @@ class BulkEdit extends Component
             ->all();
 
         return $layouts;
+    }
+
+    public function getBaseElementForFieldIds($fieldIds) {
+        $elements = [];
+//
+//        foreach($fieldIds as $fieldId) {
+//
+////            \Craft::$app->elements->getPlaceholderElement()
+//        }
     }
 
     public function getBulkEditContextFromId($id) {
@@ -116,6 +129,15 @@ class BulkEdit extends Component
                 Craft::info('Saved history item', __METHOD__);
             }
             \Craft::$app->elements->saveElement($element, false);
+
+            switch (get_class($element)) {
+                case Entry::class:
+                    \Craft::$app->entryRevisions->saveVersion($element);
+                    break;
+                default:
+                    break;
+            }
+
             Craft::info('Saved element', __METHOD__);
             $transaction->commit();
             return $element;
