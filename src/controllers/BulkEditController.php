@@ -78,13 +78,18 @@ class BulkEditController extends Controller
             'site' => $site
         ]);
 
-        return $this->asJson([
+        $responseData = [
             'success' => true,
             'modalHtml' => $modalHtml,
             'requestId' => $requestId,
             'elementIds' => $elementIds,
             'siteId' => $site->id
-        ]);
+        ];
+        $responseData['headHtml'] = $view->getHeadHtml();
+        $responseData['footHtml'] = $view->getBodyHtml();
+
+
+        return $this->asJson($responseData);
     }
 
     public function actionGetEditScreen(): Response {
@@ -126,7 +131,6 @@ class BulkEditController extends Controller
         } catch (\Exception $e) {
             throw $e;
         }
-//        $transaction->commit();
 
         $baseEntry = null;
         $view = \Craft::$app->getView();
@@ -137,13 +141,16 @@ class BulkEditController extends Controller
             'baseElement' => $baseEntry,
             'site' => $site
         ]);
-
-        return $this->asJson([
+        $responseData = [
             'success' => true,
             'modalHtml' => $modalHtml,
             'requestId' => $requestId,
             'siteId' => $site->id
-        ]);
+        ];
+        $responseData['headHtml'] = $view->getHeadHtml();
+        $responseData['footHtml'] = $view->getBodyHtml();
+
+        return $this->asJson($responseData);
 
     }
 

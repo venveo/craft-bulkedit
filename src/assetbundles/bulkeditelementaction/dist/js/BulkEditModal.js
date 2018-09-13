@@ -70,6 +70,9 @@ Craft.BulkEditModal = Garnish.Modal.extend(
                         this.loaded = true;
                         this.$container.append(response.modalHtml);
                         Craft.initUiElements(this.$container);
+                        Craft.appendHeadHtml(response.headHtml);
+                        Craft.appendFootHtml(response.footHtml);
+
                         this._unbindEventHandlersForFieldSelect();
                         this._bindEventHandlersForFieldEditor();
                     } else {
