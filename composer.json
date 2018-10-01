@@ -2,7 +2,7 @@
     "name": "venveo/craft-bulkedit",
     "description": "Bulk edit entries",
     "type": "craft-plugin",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "keywords": [
         "craft",
         "cms",
@@ -11,8 +11,8 @@
         "bulk edit"
     ],
     "support": {
-        "docs": "https://github.com/venveo/bulk-edit/blob/master/README.md",
-        "issues": "https://github.com/venveo/bulk-edit/issues"
+        "docs": "https://github.com/venveo/craft-bulkedit/blob/master/README.md",
+        "issues": "https://github.com/venveo/craft-bulkedit/issues"
     },
     "license": "MIT",
     "authors": [
@@ -31,7 +31,7 @@
     },
     "extra": {
         "name": "Bulk Edit",
-        "handle": "bulkedit",
+        "handle": "venveo-bulk-edit",
         "hasCpSettings": false,
         "hasCpSection": false,
         "changelogUrl": "https://raw.githubusercontent.com/venveo/craft-bulkedit/master/CHANGELOG.md",

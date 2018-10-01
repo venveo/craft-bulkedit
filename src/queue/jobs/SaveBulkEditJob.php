@@ -74,6 +74,6 @@ class SaveBulkEditJob extends BaseJob
 
     protected function defaultDescription(): string
     {
-        return Craft::t('bulkedit', 'Bulk Edit in progress by {name}', ['name' => $this->context->owner->firstName]);
+        return Craft::t('venveo-bulk-edit', 'Bulk Edit in progress by {name}', ['name' => $this->context->owner->firstName]);
     }
 }

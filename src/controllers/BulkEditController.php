@@ -10,27 +10,18 @@
 
 namespace venveo\bulkedit\controllers;
 
-use craft\elements\Entry;
-use craft\models\EntryType;
-use craft\records\FieldLayout;
+use Craft;
 use craft\records\Element;
 use craft\records\Field;
-use craft\records\FieldLayoutField;
-use craft\records\FieldLayoutTab;
-use craft\records\Section;
-use craft\records\Section_SiteSettings;
+use craft\web\Controller;
 use craft\web\Response;
 use venveo\bulkedit\assetbundles\bulkeditscreen\BulkEditScreenAsset;
-use venveo\bulkedit\BulkEdit as Plugin;
-
-use Craft;
-use craft\web\Controller;
 use venveo\bulkedit\BulkEdit;
+use venveo\bulkedit\BulkEdit as Plugin;
 use venveo\bulkedit\queue\jobs\SaveBulkEditJob;
 use venveo\bulkedit\records\EditContext;
 use venveo\bulkedit\records\History;
 use venveo\bulkedit\services\BulkEdit as BulkEditService;
-use yii\db\Transaction;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -64,7 +55,7 @@ class BulkEditController extends Controller
         $service = Plugin::$plugin->bulkEdit;
         $layouts = $service->getFieldLayoutsForElementIds($elementIds);
         $view = \Craft::$app->getView();
-        $modalHtml = $view->renderTemplate('bulkedit/elementactions/BulkEdit/_fields', [
+        $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_fields', [
             'layouts' => $layouts,
             'bulkedit' => $service,
             'elementIds' => $elementIds,
@@ -85,7 +76,8 @@ class BulkEditController extends Controller
         return $this->asJson($responseData);
     }
 
-    public function actionGetEditScreen(): Response {
+    public function actionGetEditScreen(): Response
+    {
         $this->requireLogin();
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -130,9 +122,7 @@ class BulkEditController extends Controller
         $baseEntry = null;
         $view = \Craft::$app->getView();
 
-//        $baseElements = BulkEdit::$plugin->bulkEdit->getBaseElementForFieldIds($fieldIds);
-
-        $modalHtml = $view->renderTemplate('bulkedit/elementactions/BulkEdit/_edit', [
+        $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_edit', [
             'fields' => $fieldModels,
             'elementIds' => $elementIds,
             'baseElement' => $baseEntry,
@@ -148,7 +138,6 @@ class BulkEditController extends Controller
         $responseData['footHtml'] = $view->getBodyHtml();
 
         return $this->asJson($responseData);
-
     }
 
     public function actionSaveContext(): Response
@@ -166,8 +155,8 @@ class BulkEditController extends Controller
         $values = Craft::$app->getRequest()->getBodyParam('fields', []);
 
         $keyedFieldValues = [];
-        foreach($values as $handle => $value) {
-            foreach($fields as $field) {
+        foreach ($values as $handle => $value) {
+            foreach ($fields as $field) {
                 if ($field->handle === $handle) {
                     $fieldId = $field->id;
                 }
@@ -186,8 +175,8 @@ class BulkEditController extends Controller
         $context->save();
 
         $rows = [];
-        foreach($elementIds as $elementId) {
-            foreach($fieldIds as $fieldId) {
+        foreach ($elementIds as $elementId) {
+            foreach ($fieldIds as $fieldId) {
                 $rows[] = [
                     'pending',
                     $context->id,

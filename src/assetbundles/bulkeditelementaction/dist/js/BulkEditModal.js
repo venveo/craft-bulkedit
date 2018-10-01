@@ -54,7 +54,7 @@ Craft.BulkEditModal = Garnish.Modal.extend(
         },
 
         loadFieldEditor: function(fieldIds) {
-            Craft.postActionRequest('bulkedit/bulk-edit/get-edit-screen', {
+            Craft.postActionRequest('venveo-bulk-edit/bulk-edit/get-edit-screen', {
                 elementIds: this.elementIds,
                 siteId: this.siteId,
                 requestId: this.requestId,
@@ -102,7 +102,7 @@ Craft.BulkEditModal = Garnish.Modal.extend(
             this._initSpinner();
             this.requestId++;
 
-            Craft.postActionRequest('bulkedit/bulk-edit/get-fields', {elementIds: elementIds, requestId: this.requestId}, function(response, textStatus) {
+            Craft.postActionRequest('venveo-bulk-edit/bulk-edit/get-fields', {elementIds: elementIds, requestId: this.requestId}, function(response, textStatus) {
                 if (textStatus === 'success') {
                     if (response.success) {
                         if (response.requestId != this.requestId) {
@@ -160,7 +160,7 @@ Craft.BulkEditModal = Garnish.Modal.extend(
             this.$container.find('.submit').attr('disabled', 'disabled');
             this.$container.find('.submit').addClass('disabled')
             const formValues = this.$container.find('#bulk-edit-values-modal').serializeArray();
-            Craft.postActionRequest('bulkedit/bulk-edit/save-context', formValues, function(response) {
+            Craft.postActionRequest('venveo-bulk-edit/bulk-edit/save-context', formValues, function(response) {
                 this.hide();
             }.bind(this));
         },
