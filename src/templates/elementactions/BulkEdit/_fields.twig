@@ -32,8 +32,11 @@
     </th>
     </thead>
     {% for layout in layouts %}
-      {% for fieldlayoutfield in layout.fields %}
-        {% set field = fieldlayoutfield.field %}
+      {% for field in layout.fields %}
+        {% set fieldUnsupported = false %}
+        {% if not bulkedit.isFieldSupported(field) %}
+          {% set fieldUnsupported = true %}
+        {% endif %}
         <tr>
           <td>
             <span>
@@ -46,6 +49,7 @@
               id: 'fieldEnabled-'~field.handle,
               name: 'fieldIds[]',
               on: false,
+              disabled: fieldUnsupported,
               value: field.id,
             }) }}
             </span>

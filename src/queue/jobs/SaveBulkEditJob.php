@@ -53,6 +53,14 @@ class SaveBulkEditJob extends BaseJob
                     throw $e;
                 }
 
+                if (($key + 1) === $totalSteps) {
+                    try {
+                        $this->context->delete();
+                    } catch (\Exception $e) {
+                        throw new Exception('Couldn’t delete context: ' . $e->getMessage());
+                    }
+                }
+
                 $this->setProgress($queue, ($key + 1) / $totalSteps);
             }
         } catch (\Exception $e) {

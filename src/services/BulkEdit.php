@@ -11,42 +11,36 @@
 namespace venveo\bulkedit\services;
 
 use Craft;
-use craft\base\Field;
-use craft\elements\actions\Edit;
-use craft\elements\Category;
-use craft\elements\Entry;
-use craft\models\FieldGroup;
-use craft\records\Element;
-use craft\records\FieldLayout;
-use venveo\bulkedit\BulkEdit as Plugin;
-
 use craft\base\Component;
+use craft\base\FieldInterface;
+use craft\elements\Entry;
+use craft\fields\BaseRelationField;
+use craft\fields\Checkboxes;
+use craft\fields\Color;
+use craft\fields\Date;
+use craft\fields\Email;
+use craft\fields\Lightswitch;
+use craft\fields\MultiSelect;
+use craft\fields\Number;
+use craft\fields\PlainText;
+use craft\fields\RadioButtons;
+use craft\fields\Table;
+use craft\fields\Url;
+use craft\records\FieldLayout;
 use venveo\bulkedit\records\EditContext;
 use venveo\bulkedit\records\History;
 
 /**
- * ElementEditor Service
- *
- * All of your plugin’s business logic should go in services, including saving data,
- * retrieving data, etc. They provide APIs that your controllers, template variables,
- * and other plugins can interact with.
- *
- * https://craftcms.com/docs/plugins/services
- *
  * @author    Venveo
  * @package   BulkEdit
  * @since     1.0.0
  */
 class BulkEdit extends Component
 {
-    // Public Methods
-    // =========================================================================
-
-
     /**
      * Get all distinct field layouts from a set of elements
+     *
      * @param $elementIds
-     * @return FieldLayout
      */
     public function getFieldLayoutsForElementIds($elementIds)
     {
@@ -57,22 +51,18 @@ class BulkEdit extends Component
             ->from('{{%fieldlayouts}} fieldlayouts')
             ->leftJoin('{{%elements}} elements', 'elements.fieldLayoutId = fieldlayouts.id')
             ->where(['IN', 'elements.id', $elementIds])
-            ->with(['fields'])
             ->all();
 
-        return $layouts;
+        $layoutsModels = [];
+        /** @var FieldLayout $layout */
+        foreach($layouts as $layout) {
+            $layoutsModels[$layout->id] = ['fields' => \Craft::$app->fields->getFieldsByLayoutId($layout->id)];
+        }
+        return $layoutsModels;
     }
 
-    public function getBaseElementForFieldIds($fieldIds) {
-        $elements = [];
-//
-//        foreach($fieldIds as $fieldId) {
-//
-////            \Craft::$app->elements->getPlaceholderElement()
-//        }
-    }
-
-    public function getBulkEditContextFromId($id) {
+    public function getBulkEditContextFromId($id)
+    {
         return EditContext::findOne($id);
     }
 
@@ -80,7 +70,8 @@ class BulkEdit extends Component
      * @param EditContext $context
      * @return array
      */
-    public function getPendingElementIdsFromContext(EditContext $context) {
+    public function getPendingElementIdsFromContext(EditContext $context): array
+    {
         $items = array_keys(History::find()
             ->limit(null)
             ->where(['=', 'contextId', $context->id])
@@ -93,7 +84,7 @@ class BulkEdit extends Component
      * @param EditContext $context
      * @return \yii\db\ActiveQueryInterface
      */
-    public function getPendingHistoryFromContext(EditContext $context)
+    public function getPendingHistoryFromContext(EditContext $context): \yii\db\ActiveQueryInterface
     {
         return $context->getHistoryItems()->where(['=', 'status', 'pending']);
     }
@@ -103,7 +94,8 @@ class BulkEdit extends Component
      * @param $elementId
      * @return \yii\db\ActiveQueryInterface
      */
-    public function getPendingHistoryForElement(EditContext $context, $elementId) {
+    public function getPendingHistoryForElement(EditContext $context, $elementId): \yii\db\ActiveQueryInterface
+    {
         $items = $this->getPendingHistoryFromContext($context);
         $items->where(['=', 'elementId', $elementId]);
         return $items;
@@ -111,6 +103,7 @@ class BulkEdit extends Component
 
     /**
      * Takes an array of history changes for a particular element and saves it to that element.
+     *
      * @param $historyItems
      * @param \craft\base\Element $element
      * @return \craft\base\Element
@@ -132,6 +125,7 @@ class BulkEdit extends Component
 
             switch (get_class($element)) {
                 case Entry::class:
+                    // Save a revision
                     \Craft::$app->entryRevisions->saveVersion($element);
                     break;
                 default:
@@ -148,8 +142,28 @@ class BulkEdit extends Component
         }
     }
 
+    public function isFieldSupported(FieldInterface $field): bool
+    {
+        $supportedFields = [
+            PlainText::class,
+            Number::class,
+            BaseRelationField::class,
+            Color::class,
+            Checkboxes::class,
+            Date::class,
+            Table::class,
+            RadioButtons::class,
+            Lightswitch::class,
+            Url::class,
+            Email::class,
+            MultiSelect::class
+        ];
 
-    public function tryToSaveVersion(\craft\base\Element $element, $context) {
-        // TODO Save a version and store the version ID somewhere
+        foreach ($supportedFields as $fieldItem) {
+            if ($field instanceof $fieldItem) {
+                return true;
+            }
+        }
+        return false;
     }
 }

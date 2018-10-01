@@ -1,14 +1,14 @@
 # Bulk Edit plugin for Craft CMS 3.x
-This plugin is built to offer extended editing functionality of a set of Craft elements.
+This plugin is built to offer extended editing functionality of a set of Craft entries.
 
 ## Steps to use:
-1. Select the subset of entries you would like to edit
-
-![Screenshot](resources/img/plugin-logo.png)
+![Screenshot](resources/img/screenshot1.png)
+![Screenshot](resources/img/screenshot2.png)
+![Screenshot](resources/img/screenshot3.png)
 
 ## Requirements
 
-This plugin requires Craft CMS 3.0.0-beta.23 or later.
+This plugin requires Craft CMS 3.0.0 or later.
 
 ## Installation
 
@@ -24,22 +24,7 @@ To install the plugin, follow these instructions.
 
 3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Bulk Edit.
 
-## Bulk Edit Overview
-
--Insert text here-
-
-## Configuring Bulk Edit
-
--Insert text here-
-
-## Using Bulk Edit
-
--Insert text here-
-
-## Bulk Edit Roadmap
-
-Some things to do, and ideas for potential features:
-
-* Release it
+## Known Issues
+* I've had to disabled custom field support as well as Matrix support for the moment. Some refactoring will need to be done to support these types of fields.
 
 Brought to you by [Venveo](https://venveo.com)

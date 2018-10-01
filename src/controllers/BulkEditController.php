@@ -66,6 +66,7 @@ class BulkEditController extends Controller
         $view = \Craft::$app->getView();
         $modalHtml = $view->renderTemplate('bulkedit/elementactions/BulkEdit/_fields', [
             'layouts' => $layouts,
+            'bulkedit' => $service,
             'elementIds' => $elementIds,
             'site' => $site
         ]);
@@ -118,7 +119,9 @@ class BulkEditController extends Controller
             /** @var Field $field */
             foreach ($fields as $field) {
                 $fieldModel = \Craft::$app->fields->getFieldById($field->id);
-                $fieldModels[] = $fieldModel;
+                if ($fieldModel && BulkEdit::$plugin->bulkEdit->isFieldSupported($fieldModel)) {
+                    $fieldModels[] = $fieldModel;
+                }
             }
         } catch (\Exception $e) {
             throw $e;
