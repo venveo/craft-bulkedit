@@ -1,5 +1,8 @@
 # Bulk Edit Changelog
 
+## 1.0.2 - 2018-10-08
+### Fixed
+- Added scrollbar to modal to allow for larger field layouts
 ## 1.0.1 - 2018-10-01
 ### Changed
 - Adjusted plugin handle
