@@ -47,7 +47,7 @@ class BulkEdit extends Plugin
      *
      * @var string
      */
-    public $schemaVersion = '1.0.0';
+    public $schemaVersion = '1.0.1';
 
     // Public Methods
     // =========================================================================
@@ -57,40 +57,11 @@ class BulkEdit extends Plugin
         parent::init();
         self::$plugin = $this;
 
-        // Register CP routes
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, [$this, 'registerCpUrlRules']);
-
         // Register element action to assets for clearing transforms
         Event::on(Entry::class, Element::EVENT_REGISTER_ACTIONS,
             function(RegisterElementActionsEvent $event) {
                 $event->actions[] = BulkEditElementAction::class;
             }
         );
-    }
-
-    public function registerCpUrlRules(RegisterUrlRulesEvent $event)
-    {
-        $rules = [
-        ];
-
-        $event->rules = array_merge($event->rules, $rules);
-    }
-
-    /**
-     * Performs actions before the plugin’s settings are saved.
-     *
-     * @return bool Whether the plugin’s settings should be saved.
-     */
-    public function beforeSaveSettings(): bool
-    {
-        // TODO: Implement beforeSaveSettings() method.
-    }
-
-    /**
-     * Performs actions after the plugin’s settings are saved.
-     */
-    public function afterSaveSettings()
-    {
-        // TODO: Implement afterSaveSettings() method.
     }
 }
