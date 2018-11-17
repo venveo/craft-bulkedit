@@ -12,6 +12,7 @@ namespace venveo\bulkedit\services;
 
 use Craft;
 use craft\base\Component;
+use craft\base\Element;
 use craft\base\FieldInterface;
 use craft\elements\Entry;
 use craft\fields\BaseRelationField;
@@ -121,6 +122,7 @@ class BulkEdit extends Component
                 $historyItem->save();
                 Craft::info('Saved history item', __METHOD__);
             }
+            $element->setScenario(Element::SCENARIO_ESSENTIALS);
             \Craft::$app->elements->saveElement($element, false);
 
             switch (get_class($element)) {
