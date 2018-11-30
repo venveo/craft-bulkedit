@@ -50,8 +50,8 @@ class BulkEdit extends Component
             ->distinct(true)
             ->limit(null)
             ->from('{{%fieldlayouts}} fieldlayouts')
-            ->leftJoin('{{%elements}} elements', 'elements.fieldLayoutId = fieldlayouts.id')
-            ->where(['IN', 'elements.id', $elementIds])
+            ->leftJoin('{{%elements}} elements', '[[elements.fieldLayoutId]] = [[fieldlayouts.id]]')
+            ->where(['IN', '[[elements.id]]', $elementIds])
             ->all();
 
         $layoutsModels = [];
