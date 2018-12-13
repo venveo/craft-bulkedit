@@ -16,6 +16,11 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Json;
 use venveo\bulkedit\assetbundles\bulkeditelementaction\BulkEditElementActionAsset;
 
+/**
+ *
+ * @property void $triggerHtml
+ * @property string $triggerLabel
+ */
 class BulkEditElementAction extends ElementAction
 {
     public $label;

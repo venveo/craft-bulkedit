@@ -32,6 +32,12 @@ class SaveBulkEditJob extends BaseJob
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * Saves bulk edited elements
+     * @param null $queue
+     * @throws \Throwable
+     */
     public function execute($queue = null)
     {
         $elementIds = BulkEdit::$plugin->bulkEdit->getPendingElementIdsFromContext($this->context);

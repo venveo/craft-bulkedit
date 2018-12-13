@@ -42,6 +42,7 @@ class BulkEdit extends Component
      * Get all distinct field layouts from a set of elements
      *
      * @param $elementIds
+     * @return int[] field layout IDs
      */
     public function getFieldLayoutsForElementIds($elementIds)
     {
@@ -56,20 +57,26 @@ class BulkEdit extends Component
 
         $layoutsModels = [];
         /** @var FieldLayout $layout */
-        foreach($layouts as $layout) {
+        foreach ($layouts as $layout) {
             $layoutsModels[$layout->id] = ['fields' => \Craft::$app->fields->getFieldsByLayoutId($layout->id)];
         }
         return $layoutsModels;
     }
 
-    public function getBulkEditContextFromId($id)
+    /**
+     * @param $id
+     * @return EditContext|null
+     */
+    public function getBulkEditContextFromId($id): ?EditContext
     {
         return EditContext::findOne($id);
     }
 
     /**
+     * Gets all unique elements from incomplete bulk edit tasks
+     *
      * @param EditContext $context
-     * @return array
+     * @return int[] pending element IDs
      */
     public function getPendingElementIdsFromContext(EditContext $context): array
     {
@@ -82,6 +89,8 @@ class BulkEdit extends Component
     }
 
     /**
+     * Gets all pending bulk edit tasks
+     *
      * @param EditContext $context
      * @return \yii\db\ActiveQueryInterface
      */
@@ -91,6 +100,8 @@ class BulkEdit extends Component
     }
 
     /**
+     * Gets all pending tasks for a particular element
+     *
      * @param EditContext $context
      * @param $elementId
      * @return \yii\db\ActiveQueryInterface
@@ -106,15 +117,17 @@ class BulkEdit extends Component
      * Takes an array of history changes for a particular element and saves it to that element.
      *
      * @param $historyItems
-     * @param \craft\base\Element $element
-     * @return \craft\base\Element
+     * @param Element $element
+     * @return Element
      * @throws \Throwable
      * @throws \yii\base\Exception
      */
-    public function processHistoryItemsForElement($historyItems, \craft\base\Element $element)
+    public function processHistoryItemsForElement($historyItems, Element $element): ?Element
     {
+        // We'll process the entire element in a transaction to help avoid PROBS
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
+            /** @var History $historyItem */
             foreach ($historyItems as $historyItem) {
                 $historyItem->originalValue = \GuzzleHttp\json_encode($element->getFieldValue($historyItem->field->handle));
                 $historyItem->status = 'completed';
@@ -125,6 +138,7 @@ class BulkEdit extends Component
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
             \Craft::$app->elements->saveElement($element, false);
 
+            // Perform any element type specific tasks
             switch (get_class($element)) {
                 case Entry::class:
                     // Save a revision
