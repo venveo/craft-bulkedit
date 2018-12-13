@@ -1,3 +1,0 @@
-/** global: Craft */
-/** global: Garnish */
-
