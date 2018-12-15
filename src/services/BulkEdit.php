@@ -13,6 +13,7 @@ namespace venveo\bulkedit\services;
 use Craft;
 use craft\base\Component;
 use craft\base\Element;
+use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\elements\Entry;
 use craft\fields\BaseRelationField;
@@ -28,6 +29,8 @@ use craft\fields\RadioButtons;
 use craft\fields\Table;
 use craft\fields\Url;
 use craft\records\FieldLayout;
+use craft\redactor\Field as RedactorField;
+use venveo\bulkedit\models\FieldWrapper;
 use venveo\bulkedit\records\EditContext;
 use venveo\bulkedit\records\History;
 
@@ -38,6 +41,10 @@ use venveo\bulkedit\records\History;
  */
 class BulkEdit extends Component
 {
+    public const STRATEGY_REPLACE = 'replace';
+    public const STRATEGY_MERGE = 'merge';
+    public const STRATEGY_SUBTRACT = 'subtract';
+
     /**
      * Get all distinct field layouts from a set of elements
      *
@@ -62,6 +69,43 @@ class BulkEdit extends Component
         }
         return $layoutsModels;
     }
+
+    /**
+     * Get all distinct field layouts from a set of elements
+     *
+     * @param $elementIds
+     * @return FieldWrapper[] fields
+     */
+    public function getFieldsForElementIds($elementIds)
+    {
+        $layouts = FieldLayout::find()
+            ->select('fieldlayouts.*')
+            ->distinct(true)
+            ->limit(null)
+            ->from('{{%fieldlayouts}} fieldlayouts')
+            ->leftJoin('{{%elements}} elements', '[[elements.fieldLayoutId]] = [[fieldlayouts.id]]')
+            ->where(['IN', '[[elements.id]]', $elementIds])
+            ->all();
+
+        $fields = [];
+        /** @var FieldLayout $layout */
+        foreach ($layouts as $layout) {
+            $layoutFields = \Craft::$app->fields->getFieldsByLayoutId($layout->id);
+            /** @var Field $layoutField */
+            foreach ($layoutFields as $layoutField) {
+                if (!array_key_exists($layoutField->handle, $fields)) {
+                    $fieldWrapper = new FieldWrapper();
+                    $fieldWrapper->field = $layoutField;
+                    $fieldWrapper->layouts[] = $layout;
+                    $fields[$layoutField->handle] = $fieldWrapper;
+                } else {
+                    $fields[$layoutField->handle]->layouts[] = $layout;
+                }
+            }
+        }
+        return $fields;
+    }
+
 
     /**
      * @param $id
@@ -124,7 +168,7 @@ class BulkEdit extends Component
      */
     public function processHistoryItemsForElement($historyItems, Element $element): ?Element
     {
-        // We'll process the entire element in a transaction to help avoid PROBS
+        // We'll process the entire element in a transaction to help avoid problems
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             /** @var History $historyItem */
@@ -175,11 +219,35 @@ class BulkEdit extends Component
             MultiSelect::class
         ];
 
+        // Add support for redactor
+        if (\Craft::$app->getPlugins()->isPluginEnabled('redactor')) {
+            $supportedFields[] = RedactorField::class;
+        }
+
         foreach ($supportedFields as $fieldItem) {
             if ($field instanceof $fieldItem) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Gets an array of values for supported strategies on field types
+     * @param FieldInterface $field
+     * @return array
+     */
+    public function getSupportedStrategiesForField(FieldInterface $field)
+    {
+        $availableStrategies = [
+            ['value' => self::STRATEGY_REPLACE, 'label' => 'Replace']
+        ];
+
+        if ($field instanceof BaseRelationField) {
+            $availableStrategies[] = ['value' => self::STRATEGY_MERGE, 'label' => 'Merge'];
+            $availableStrategies[] = ['value' => self::STRATEGY_SUBTRACT, 'label' => 'Subtract'];
+        }
+
+        return $availableStrategies;
     }
 }

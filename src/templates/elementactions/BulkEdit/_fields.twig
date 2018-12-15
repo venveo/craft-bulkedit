@@ -2,70 +2,94 @@
 
 <div class="bulkedit field-edit-modal">
   <h2>Select Fields</h2>
-  <p>Editing <strong>{{ elementIds|length }}</strong> elements on site <strong>{{ site.name }} ({{ site.language }})</strong></p>
+  <p>Editing <strong>{{ elementIds|length }}</strong> elements on site
+    <strong>{{ site.name }} ({{ site.language }})</strong></p>
   <p>Select the fields you would like to edit:</p>
-  {% if layouts|length %}
+  {% if fieldWrappers|length %}
     <form action="" method="post" accept-charset="UTF-8">
       {{ csrfInput() }}
       <input type="hidden" name="action"
              value="bulkedit/bulk-edit/edit">
       {% for elementId in elementIds %}
-      <input type="hidden" name="elementIds[]" value="{{ elementId }}">
+        <input type="hidden" name="elementIds[]" value="{{ elementId }}">
       {% endfor %}
       <input type="hidden" name="siteId" value="{{ site.id }}">
-  <table class="data fullwidth" id="fields-table">
-    <thead>
-    <th scope="col" class="col-header">
+      <table class="data fullwidth" id="fields-table">
+        <thead>
+        <th scope="col" class="col-header">
         <span class="heading-text">
             Field Name
         </span>
-    </th>
-    <th scope="col" class="col-header">
+        </th>
+        <th scope="col" class="col-header">
         <span class="heading-text">
             Field Handle
         </span>
-    </th>
-    <th scope="col" class="col-header">
+        </th>
+        <th scope="col" class="col-header">
         <span class="heading-text">
             Edit
         </span>
-    </th>
-    </thead>
-    {% for layout in layouts %}
-      {% for field in layout.fields %}
-        {% set fieldUnsupported = false %}
-        {% if not bulkedit.isFieldSupported(field) %}
-          {% set fieldUnsupported = true %}
-        {% endif %}
-        <tr>
-          <td>
+        </th>
+        <th scope="col" class="col-header">
+        <span class="heading-text">
+            Strategy
+        </span>
+        </th>
+        </thead>
+        {# fieldWrapper  #}
+        {% for fieldWrapper in fieldWrappers %}
+          {% set field = fieldWrapper.field %}
+          {% set fieldUnsupported = false %}
+          {% if not bulkedit.isFieldSupported(field) %}
+            {% set fieldUnsupported = true %}
+          {% endif %}
+          <tr>
+            <td>
             <span>
-                {{ field.name | t('site') }} {% if field.instructions %}<span class="info">{{ field.instructions | t('site') | md | raw }}</span>{% endif %}
+                {{ field.name | t('site') }} {% if field.instructions %}<span
+                class="info">{{ field.instructions | t('site') | md | raw }}</span>{% endif %}
             </span>
-          </td>
-          <td><span>{{ field.handle }}</span></td>
-          <td><span>
-            {{ forms.lightswitchField({
-              id: 'fieldEnabled-'~field.handle,
-              name: 'fieldIds[]',
-              on: false,
+            </td>
+            <td><span>{{ field.handle }}</span></td>
+            <td>
+            <span>
+                {{ forms.lightswitchField({
+                  id: 'fieldEnabled-'~field.handle,
+                  name: 'fields['~field.id~'][enabled]',
+                  on: false,
+                  disabled: fieldUnsupported,
+                  value: true,
+                }) }}
+            </span>
+            </td>
+            <td><span>
+            {{ forms.selectField({
+              id: 'fieldStrategy-'~field.handle,
+              name: 'fields['~field.id~'][strategy]',
               disabled: fieldUnsupported,
-              value: field.id,
+              options: bulkedit.getSupportedStrategiesForField(field),
+              default: 'replace',
             }) }}
             </span>
-          </td>
-        </tr>
-      {% endfor %}
-    {% endfor %}
-  </table>
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
 
-  <div class="field-edit-modal-bar">
-    <div class="buttons right">
-      <div class="btn" id="field-edit-cancel">Cancel</div>
-      <input type="submit" value="Continue" disabled class="btn submit disabled"></div>
-  </div>
-  </form>
+      <div class="field-edit-modal-bar">
+        <div class="buttons right">
+          <div class="btn" id="field-edit-cancel">Cancel</div>
+          <input type="submit" value="Continue" disabled
+                 class="btn submit disabled"></div>
+      </div>
+    </form>
   {% else %}
-    <p>These elements have no fields associated with them.</p>
+    <p>These elements have no associated fields.</p>
+    <div class="field-edit-modal-bar">
+      <div class="buttons right">
+        <div class="btn" id="field-edit-cancel">Cancel</div>
+      </div>
+    </div>
   {% endif %}
 </div>
