@@ -178,12 +178,12 @@ class BulkEdit extends Component
                 $originalValue = $element->getFieldValue($historyItem->field->handle);
                 $historyItem->originalValue = \GuzzleHttp\json_encode($originalValue);
                 $historyItem->status = 'completed';
+                $field = \Craft::$app->fields->getFieldByHandle($fieldHandle);
                 switch($historyItem->strategy) {
                     case 'replace':
                         $element->setFieldValue($fieldHandle, $newValue);
                         break;
                     case 'merge':
-                        $field = \Craft::$app->fields->getFieldByHandle($fieldHandle);
                         if ($field && $field instanceof BaseRelationField) {
                             $ids = $originalValue->ids();
                             $ids = array_merge($ids, $newValue);
@@ -193,6 +193,17 @@ class BulkEdit extends Component
                             throw new \Exception("Can't merge field: ". $fieldHandle);
                         }
                         break;
+                    case 'subtract':
+                        if ($field && $field instanceof BaseRelationField) {
+                            $ids = $originalValue->ids();
+                            $ids = array_diff($ids, $newValue);
+                            $element->setFieldValue($fieldHandle, $ids);
+
+                        } else {
+                            throw new \Exception("Can't merge field: ". $fieldHandle);
+                        }
+                        break;
+
                 }
                 $historyItem->save();
                 Craft::info('Saved history item', __METHOD__);
