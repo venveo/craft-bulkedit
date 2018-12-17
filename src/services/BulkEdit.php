@@ -173,9 +173,27 @@ class BulkEdit extends Component
         try {
             /** @var History $historyItem */
             foreach ($historyItems as $historyItem) {
-                $historyItem->originalValue = \GuzzleHttp\json_encode($element->getFieldValue($historyItem->field->handle));
+                $fieldHandle = $historyItem->field->handle;
+                $newValue = \GuzzleHttp\json_decode($historyItem->newValue);
+                $originalValue = $element->getFieldValue($historyItem->field->handle);
+                $historyItem->originalValue = \GuzzleHttp\json_encode($originalValue);
                 $historyItem->status = 'completed';
-                $element->setFieldValue($historyItem->field->handle, \GuzzleHttp\json_decode($historyItem->newValue));
+                switch($historyItem->strategy) {
+                    case 'replace':
+                        $element->setFieldValue($fieldHandle, $newValue);
+                        break;
+                    case 'merge':
+                        $field = \Craft::$app->fields->getFieldByHandle($fieldHandle);
+                        if ($field && $field instanceof BaseRelationField) {
+                            $ids = $originalValue->ids();
+                            $ids = array_merge($ids, $newValue);
+                            $element->setFieldValue($fieldHandle, $ids);
+
+                        } else {
+                            throw new \Exception("Can't merge field: ". $fieldHandle);
+                        }
+                        break;
+                }
                 $historyItem->save();
                 Craft::info('Saved history item', __METHOD__);
             }
