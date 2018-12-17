@@ -165,14 +165,14 @@ class BulkEditController extends Controller
 
         $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
         $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
-        $fieldIds = array_values(Craft::$app->getRequest()->getRequiredParam('fieldIds'));
+//        $fieldIds = array_values(Craft::$app->getRequest()->getRequiredParam('fieldIds'));
         $fieldMeta = array_values(Craft::$app->getRequest()->getRequiredParam('fieldMeta'));
 
         $fieldStrategies = [];
-        foreach($fieldMeta as $fieldId => $metaData) {
-            $fieldStrategies[$fieldId] = $metaData['strategy'] ?? 'replace';
+        foreach($fieldMeta as $field) {
+            $fieldStrategies[$field['id']] = $field['strategy'];
         }
-
+        $fieldIds = array_keys($fieldStrategies);
         $fields = Field::findAll($fieldIds);
 
         $values = Craft::$app->getRequest()->getBodyParam('fields', []);
@@ -198,7 +198,6 @@ class BulkEditController extends Controller
         $context->save();
 
         $rows = [];
-        var_dump($fieldStrategies);
         foreach ($elementIds as $elementId) {
             foreach ($fieldIds as $fieldId) {
                 $strategy = $fieldStrategies[$fieldId] ?? 'replace';

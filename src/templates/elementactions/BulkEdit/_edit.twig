@@ -7,8 +7,8 @@
   {% endfor %}
   <input type="hidden" name="siteId" value="{{ site.id }}">
   {% for field in fields %}
-    <input type="hidden" name="fieldIds[]" value="{{ field.id }}">
-    <input type="hidden" name="fieldMeta['{{ field.id }}'][strategy]" value="{{ fieldData[field.id].strategy }}">
+    <input type="hidden" name="fieldMeta[{{ loop.index0 }}][id]" value="{{ field.id }}">
+    <input type="hidden" name="fieldMeta[{{ loop.index0 }}][strategy]" value="{{ fieldData[field.id].strategy }}">
     <div class="pane">
       {% namespace 'fields' %}
         {% include "_includes/field" with {
