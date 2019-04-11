@@ -94,7 +94,12 @@ Craft.BulkEditModal = Garnish.Modal.extend(
             this._initSpinner();
             this.requestId++;
 
-            Craft.postActionRequest('venveo-bulk-edit/bulk-edit/get-fields', {elementIds: elementIds, requestId: this.requestId}, function(response, textStatus) {
+            Craft.postActionRequest('venveo-bulk-edit/bulk-edit/get-fields',
+                {
+                    elementIds: elementIds,
+                    requestId: this.requestId,
+                    elementType: Craft.elementIndex.elementType
+                }, function(response, textStatus) {
                 if (textStatus === 'success') {
                     if (response.success) {
                         if (response.requestId != this.requestId) {

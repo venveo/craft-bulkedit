@@ -76,8 +76,9 @@ class BulkEdit extends Component
      * @param $elementIds
      * @return FieldWrapper[] fields
      */
-    public function getFieldsForElementIds($elementIds)
+    public function getFieldsForElementIds($elementIds, $elementType)
     {
+        // TODO: This needs to change to support different element types
         $layouts = FieldLayout::find()
             ->select('fieldlayouts.*')
             ->distinct(true)

@@ -49,11 +49,12 @@ class BulkEditController extends Controller
 
         $site = Craft::$app->getSites()->getCurrentSite();
         $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
+        $elementType = Craft::$app->getRequest()->getRequiredParam('elementType');
         $requestId = Craft::$app->getRequest()->getRequiredParam('requestId');
 
         /** @var BulkEditService $service */
         $service = Plugin::$plugin->bulkEdit;
-        $fields = $service->getFieldsForElementIds($elementIds);
+        $fields = $service->getFieldsForElementIds($elementIds, $elementType);
 
 
         $view = \Craft::$app->getView();

@@ -12,6 +12,7 @@ namespace venveo\bulkedit;
 
 use craft\base\Element;
 use craft\base\Plugin;
+use craft\elements\Category;
 use craft\elements\Entry;
 use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -57,8 +58,13 @@ class BulkEdit extends Plugin
         parent::init();
         self::$plugin = $this;
 
-        // Register element action to assets for clearing transforms
         Event::on(Entry::class, Element::EVENT_REGISTER_ACTIONS,
+            function(RegisterElementActionsEvent $event) {
+                $event->actions[] = BulkEditElementAction::class;
+            }
+        );
+
+        Event::on(Category::class, Element::EVENT_REGISTER_ACTIONS,
             function(RegisterElementActionsEvent $event) {
                 $event->actions[] = BulkEditElementAction::class;
             }
