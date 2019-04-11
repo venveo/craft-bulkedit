@@ -5,7 +5,7 @@
  * Bulk edit entries
  *
  * @link      https://venveo.com
- * @copyright Copyright (c) 2018 Venveo
+ * @copyright Copyright (c) 2018-2019 Venveo
  */
 
 namespace venveo\bulkedit\controllers;
@@ -26,8 +26,6 @@ use venveo\bulkedit\services\BulkEdit as BulkEditService;
 use yii\web\BadRequestHttpException;
 
 /**
- * https://craftcms.com/docs/plugins/controllers
- *
  * @author    Venveo
  * @package   BulkEdit
  * @since     1.0.0
@@ -39,12 +37,13 @@ class BulkEditController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException if not a valid request
-     * @throws \Twig_Error_Loader
-     * @throws \yii\base\Exception
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     * @throws \craft\errors\SiteNotFoundException
      */
     public function actionGetFields(): Response
     {
-        $this->requireLogin();
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -75,13 +74,18 @@ class BulkEditController extends Controller
         $responseData['headHtml'] = $view->getHeadHtml();
         $responseData['footHtml'] = $view->getBodyHtml();
 
-
         return $this->asJson($responseData);
     }
 
-    public function actionGetEditScreen(): Response
+    /**
+     * @return \yii\web\Response
+     * @throws BadRequestHttpException
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     */
+    public function actionGetEditScreen()
     {
-        $this->requireLogin();
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -157,9 +161,13 @@ class BulkEditController extends Controller
         return $this->asJson($responseData);
     }
 
-    public function actionSaveContext(): Response
+    /**
+     * @return \yii\web\Response
+     * @throws BadRequestHttpException
+     * @throws \yii\db\Exception
+     */
+    public function actionSaveContext()
     {
-        $this->requireLogin();
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 

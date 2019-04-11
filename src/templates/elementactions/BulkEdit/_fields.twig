@@ -4,8 +4,8 @@
   <h2>Select Fields</h2>
   <p>Editing <strong>{{ elementIds|length }}</strong> elements on site
     <strong>{{ site.name }} ({{ site.language }})</strong></p>
-  <p>Select the fields you would like to edit:</p>
   {% if fieldWrappers|length %}
+    <p>Select the fields you would like to edit:</p>
     <form action="" method="post" accept-charset="UTF-8">
       {{ csrfInput() }}
       <input type="hidden" name="action"
