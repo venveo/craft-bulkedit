@@ -1,15 +1,20 @@
 # Bulk Edit Changelog
 
-## 1.0.4 - 2018-12-13
-
+## Unreleased
 ### Added
 - Strategy selection: replace, merge, or subtract
 
-### Fixed
-- Incompatibility with PostgreSQL
-
 ### Changed
 - Refactored much of the modal form structure to accommodate strategies
+
+## 1.0.5 - 2019-04-08
+### Fixed
+- Fixed issue with unescaped HTML in field instructions breaking editor
+
+## 1.0.4 - 2019-04-08
+### Fixed
+- Fixed install migration issues
+- Fixed potential compatibility issues with PostgreSQL (Thanks, @boboldehampsink)
 
 ## 1.0.3 - 2018-11-17
 ### Fixed

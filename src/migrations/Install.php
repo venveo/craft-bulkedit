@@ -84,8 +84,8 @@ class Install extends Migration
                     'elementId' => $this->integer()->notNull(),
                     'fieldId' => $this->integer()->notNull(),
                     'siteId' => $this->integer()->notNull(),
-                    'originalValue' => $this->string(),
-                    'newValue' => $this->string(),
+                    'originalValue' => $this->text(),
+                    'newValue' => $this->text(),
                 ]
             );
         }
