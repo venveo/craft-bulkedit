@@ -3,9 +3,11 @@
 ## Unreleased
 ### Added
 - Strategy selection: replace, merge, or subtract
+- Added support for bulk editing category fields
 
 ### Changed
 - Refactored much of the modal form structure to accommodate strategies
+- Code cleaning
 
 ## 1.0.5 - 2019-04-08
 ### Fixed

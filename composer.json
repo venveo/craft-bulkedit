@@ -32,12 +32,7 @@
     "extra": {
         "name": "Bulk Edit",
         "handle": "venveo-bulk-edit",
-        "hasCpSettings": false,
-        "hasCpSection": false,
         "changelogUrl": "https://raw.githubusercontent.com/venveo/craft-bulkedit/master/CHANGELOG.md",
-        "components": {
-            "bulkEdit": "venveo\\bulkedit\\services\\BulkEdit"
-        },
-        "class": "venveo\\bulkedit\\BulkEdit"
+        "class": "venveo\\bulkedit\\Plugin"
     }
 }

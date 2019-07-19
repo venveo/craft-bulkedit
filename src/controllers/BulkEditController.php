@@ -17,8 +17,7 @@ use craft\records\Field;
 use craft\web\Controller;
 use craft\web\Response;
 use venveo\bulkedit\assetbundles\bulkeditscreen\BulkEditScreenAsset;
-use venveo\bulkedit\BulkEdit;
-use venveo\bulkedit\BulkEdit as Plugin;
+use venveo\bulkedit\Plugin;
 use venveo\bulkedit\queue\jobs\SaveBulkEditJob;
 use venveo\bulkedit\records\EditContext;
 use venveo\bulkedit\records\History;
@@ -126,7 +125,7 @@ class BulkEditController extends Controller
             /** @var Field $field */
             foreach ($fields as $field) {
                 $fieldModel = \Craft::$app->fields->getFieldById($field->id);
-                if ($fieldModel && BulkEdit::$plugin->bulkEdit->isFieldSupported($fieldModel)) {
+                if ($fieldModel && Plugin::$plugin->bulkEdit->isFieldSupported($fieldModel)) {
                     $fieldModels[] = $fieldModel;
                 }
             }

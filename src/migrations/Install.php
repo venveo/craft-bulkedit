@@ -2,7 +2,7 @@
 
 namespace venveo\bulkedit\migrations;
 
-use venveo\bulkedit\BulkEdit;
+use venveo\bulkedit\Plugin;
 
 use Craft;
 use craft\config\DbConfig;
