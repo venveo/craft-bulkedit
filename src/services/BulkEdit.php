@@ -52,6 +52,7 @@ class BulkEdit extends Component
     public const STRATEGY_SUBTRACT = 'subtract';
 
     public const EVENT_REGISTER_ELEMENT_PROCESSORS = 'registerElementProcessors';
+    public const EVENT_REGISTER_SUPPORTED_FIELDS = 'registerSupportedFields';
 
     /**
      * Get all distinct field layouts from a set of elements
@@ -224,6 +225,10 @@ class BulkEdit extends Component
         if (\Craft::$app->getPlugins()->isPluginEnabled('redactor')) {
             $supportedFields[] = RedactorField::class;
         }
+
+        $event = new RegisterComponentTypesEvent();
+        $event->types = &$supportedFields;
+        $this->trigger(self::EVENT_REGISTER_SUPPORTED_FIELDS, $event);
 
         foreach ($supportedFields as $fieldItem) {
             if ($field instanceof $fieldItem) {
