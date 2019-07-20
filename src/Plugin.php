@@ -15,6 +15,7 @@ use craft\base\Plugin as BasePlugin;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\elements\User;
 use craft\events\RegisterElementActionsEvent;
 use venveo\bulkedit\elements\actions\BulkEditElementAction;
 use venveo\bulkedit\services\BulkEdit;
@@ -49,6 +50,18 @@ class Plugin extends BasePlugin
         );
 
         Event::on(Category::class, Element::EVENT_REGISTER_ACTIONS,
+            function (RegisterElementActionsEvent $event) {
+                $event->actions[] = BulkEditElementAction::class;
+            }
+        );
+
+        Event::on(Asset::class, Element::EVENT_REGISTER_ACTIONS,
+            function (RegisterElementActionsEvent $event) {
+                $event->actions[] = BulkEditElementAction::class;
+            }
+        );
+
+        Event::on(User::class, Element::EVENT_REGISTER_ACTIONS,
             function (RegisterElementActionsEvent $event) {
                 $event->actions[] = BulkEditElementAction::class;
             }

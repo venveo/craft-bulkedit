@@ -40,18 +40,6 @@ class BulkEditElementAction extends ElementAction
         return $this->label;
     }
 
-    /**
-     * Clears transforms for selected assets
-     *
-     * @param ElementQueryInterface $query
-     *
-     * @return bool
-     */
-    public function performAction(ElementQueryInterface $query): bool
-    {
-
-    }
-
 
     /**
      * @inheritdoc

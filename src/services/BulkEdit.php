@@ -30,6 +30,8 @@ use craft\fields\Table;
 use craft\fields\Url;
 use craft\records\FieldLayout;
 use craft\redactor\Field as RedactorField;
+use venveo\bulkedit\base\AbstractElementTypeProcessor;
+use venveo\bulkedit\elements\processors\EntryProcessor;
 use venveo\bulkedit\models\FieldWrapper;
 use venveo\bulkedit\records\EditContext;
 use venveo\bulkedit\records\History;
@@ -49,44 +51,17 @@ class BulkEdit extends Component
      * Get all distinct field layouts from a set of elements
      *
      * @param $elementIds
-     * @return int[] field layout IDs
-     */
-    public function getFieldLayoutsForElementIds($elementIds)
-    {
-        $layouts = FieldLayout::find()
-            ->select('fieldlayouts.*')
-            ->distinct(true)
-            ->limit(null)
-            ->from('{{%fieldlayouts}} fieldlayouts')
-            ->leftJoin('{{%elements}} elements', '[[elements.fieldLayoutId]] = [[fieldlayouts.id]]')
-            ->where(['IN', '[[elements.id]]', $elementIds])
-            ->all();
-
-        $layoutsModels = [];
-        /** @var FieldLayout $layout */
-        foreach ($layouts as $layout) {
-            $layoutsModels[$layout->id] = ['fields' => \Craft::$app->fields->getFieldsByLayoutId($layout->id)];
-        }
-        return $layoutsModels;
-    }
-
-    /**
-     * Get all distinct field layouts from a set of elements
-     *
-     * @param $elementIds
      * @return FieldWrapper[] fields
+     * @throws \Exception
      */
     public function getFieldsForElementIds($elementIds, $elementType)
     {
-        // TODO: This needs to change to support different element types
-        $layouts = FieldLayout::find()
-            ->select('fieldlayouts.*')
-            ->distinct(true)
-            ->limit(null)
-            ->from('{{%fieldlayouts}} fieldlayouts')
-            ->leftJoin('{{%elements}} elements', '[[elements.fieldLayoutId]] = [[fieldlayouts.id]]')
-            ->where(['IN', '[[elements.id]]', $elementIds])
-            ->all();
+        // Works for entries
+        $processor = $this->getElementTypeProcessor($elementType);
+        if (!$processor) {
+            throw new \Exception('Unable to process element type');
+        }
+        $layouts = $processor::getLayoutsFromElementIds($elementIds);
 
         $fields = [];
         /** @var FieldLayout $layout */
@@ -175,7 +150,7 @@ class BulkEdit extends Component
             /** @var History $historyItem */
             foreach ($historyItems as $historyItem) {
                 $fieldHandle = $historyItem->field->handle;
-                $newValue = \GuzzleHttp\json_decode($historyItem->newValue);
+                $newValue = \GuzzleHttp\json_decode($historyItem->newValue, true);
                 $originalValue = $element->getFieldValue($historyItem->field->handle);
                 $historyItem->originalValue = \GuzzleHttp\json_encode($originalValue);
                 $historyItem->status = 'completed';
@@ -211,16 +186,6 @@ class BulkEdit extends Component
             }
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
             \Craft::$app->elements->saveElement($element, false);
-
-            // Perform any element type specific tasks
-            switch (get_class($element)) {
-                case Entry::class:
-                    // Save a revision
-                    \Craft::$app->entryRevisions->saveVersion($element);
-                    break;
-                default:
-                    break;
-            }
 
             Craft::info('Saved element', __METHOD__);
             $transaction->commit();
@@ -279,5 +244,19 @@ class BulkEdit extends Component
         }
 
         return $availableStrategies;
+    }
+
+    /**
+     * @param $elementType
+     * @return AbstractElementTypeProcessor
+     */
+    public function getElementTypeProcessor($elementType) {
+        $processors = [
+            EntryProcessor::getType() => EntryProcessor::class
+        ];
+
+        if (array_key_exists($elementType, $processors)) {
+            return $processors[$elementType];
+        }
     }
 }

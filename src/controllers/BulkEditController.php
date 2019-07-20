@@ -11,12 +11,10 @@
 namespace venveo\bulkedit\controllers;
 
 use Craft;
-use craft\models\FieldLayout;
 use craft\records\Element;
 use craft\records\Field;
 use craft\web\Controller;
 use craft\web\Response;
-use venveo\bulkedit\assetbundles\bulkeditscreen\BulkEditScreenAsset;
 use venveo\bulkedit\Plugin;
 use venveo\bulkedit\queue\jobs\SaveBulkEditJob;
 use venveo\bulkedit\records\EditContext;
@@ -97,7 +95,7 @@ class BulkEditController extends Controller
 
         // Pull out the enabled fields
         $enabledFields = [];
-        foreach($fields as $fieldId => $field) {
+        foreach ($fields as $fieldId => $field) {
             if ($field['enabled']) {
                 $enabledFields[$fieldId] = $field;
             }
@@ -136,7 +134,7 @@ class BulkEditController extends Controller
         $view = \Craft::$app->getView();
 
         // We've gotta register any asset bundles - this won't actually be rendered
-        foreach($fieldModels as $fieldModel) {
+        foreach ($fieldModels as $fieldModel) {
             $view->renderPageTemplate('_includes/field', [
                 'field' => $fieldModel,
                 'required' => false
@@ -177,7 +175,7 @@ class BulkEditController extends Controller
         $fieldMeta = array_values(Craft::$app->getRequest()->getRequiredParam('fieldMeta'));
 
         $fieldStrategies = [];
-        foreach($fieldMeta as $field) {
+        foreach ($fieldMeta as $field) {
             $fieldStrategies[$field['id']] = $field['strategy'];
         }
         $fieldIds = array_keys($fieldStrategies);
