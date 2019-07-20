@@ -66,8 +66,7 @@ class SaveBulkEditJob extends BaseJob
                         throw new Exception('Couldn’t delete context: ' . $e->getMessage());
                     }
                 }
-
-                $this->setProgress($queue, ($key + 1) / $totalSteps);
+                $this->setProgress($queue, ($key + 1) / $totalSteps, 'Element '. ($key + 1) . ' of '. $totalSteps);
             }
         } catch (\Exception $e) {
             Craft::error('Failed to save... '. $e->getMessage(), __METHOD__);
