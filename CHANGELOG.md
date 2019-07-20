@@ -3,11 +3,14 @@
 ## Unreleased
 ### Added
 - Strategy selection: replace, merge, or subtract
-- Added support for bulk editing category fields
+- Added support for bulk editing custom fields on Categories
+- Added support for bulk editing custom fields on Users
+- Added support for bulk editing custom fields on Assets
+- Added `EVENT_REGISTER_ELEMENT_PROCESSORS` to allow modules/plugins an opportunity to register an element processor
 
 ### Changed
 - Refactored much of the modal form structure to accommodate strategies
-- Code cleaning
+- Code cleaning & abstraction
 
 ## 1.0.5 - 2019-04-08
 ### Fixed

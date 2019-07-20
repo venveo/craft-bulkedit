@@ -16,6 +16,7 @@ use craft\base\Element;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\elements\Entry;
+use craft\events\RegisterComponentTypesEvent;
 use craft\fields\BaseRelationField;
 use craft\fields\Checkboxes;
 use craft\fields\Color;
@@ -31,6 +32,7 @@ use craft\fields\Url;
 use craft\records\FieldLayout;
 use craft\redactor\Field as RedactorField;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
+use venveo\bulkedit\elements\processors\AssetProcessor;
 use venveo\bulkedit\elements\processors\CategoryProcessor;
 use venveo\bulkedit\elements\processors\EntryProcessor;
 use venveo\bulkedit\elements\processors\UserProcessor;
@@ -48,6 +50,8 @@ class BulkEdit extends Component
     public const STRATEGY_REPLACE = 'replace';
     public const STRATEGY_MERGE = 'merge';
     public const STRATEGY_SUBTRACT = 'subtract';
+
+    public const EVENT_REGISTER_ELEMENT_PROCESSORS = 'registerElementProcessors';
 
     /**
      * Get all distinct field layouts from a set of elements
@@ -254,13 +258,28 @@ class BulkEdit extends Component
      */
     public function getElementTypeProcessor($elementType) {
         $processors = [
-            EntryProcessor::getType() => EntryProcessor::class,
-            UserProcessor::getType() => UserProcessor::class,
-            CategoryProcessor::getType() => CategoryProcessor::class
+            EntryProcessor::class,
+            UserProcessor::class,
+            CategoryProcessor::class,
+            AssetProcessor::class,
         ];
 
-        if (array_key_exists($elementType, $processors)) {
-            return $processors[$elementType];
+        $event = new RegisterComponentTypesEvent();
+        $event->types = &$processors;
+        $this->trigger(self::EVENT_REGISTER_ELEMENT_PROCESSORS, $event);
+
+        $processorsKeyedByClass = [];
+        foreach($processors as $processor) {
+            $reflection = new \ReflectionClass($processor);
+            /** @var AbstractElementTypeProcessor $instance */
+            $instance = $reflection->newInstanceWithoutConstructor();
+            $type = $instance::getType();
+            $processorsKeyedByClass[$type] = $processor;
         }
+
+        if (array_key_exists($elementType, $processorsKeyedByClass)) {
+            return $processorsKeyedByClass[$elementType];
+        }
+        return null;
     }
 }
