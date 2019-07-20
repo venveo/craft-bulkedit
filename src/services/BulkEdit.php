@@ -33,6 +33,7 @@ use craft\redactor\Field as RedactorField;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\elements\processors\CategoryProcessor;
 use venveo\bulkedit\elements\processors\EntryProcessor;
+use venveo\bulkedit\elements\processors\UserProcessor;
 use venveo\bulkedit\models\FieldWrapper;
 use venveo\bulkedit\records\EditContext;
 use venveo\bulkedit\records\History;
@@ -254,6 +255,7 @@ class BulkEdit extends Component
     public function getElementTypeProcessor($elementType) {
         $processors = [
             EntryProcessor::getType() => EntryProcessor::class,
+            UserProcessor::getType() => UserProcessor::class,
             CategoryProcessor::getType() => CategoryProcessor::class
         ];
 
