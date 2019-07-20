@@ -7,6 +7,7 @@
 - Added support for bulk editing custom fields on Users
 - Added support for bulk editing custom fields on Assets
 - Added `EVENT_REGISTER_ELEMENT_PROCESSORS` to allow modules/plugins an opportunity to register an element processor
+- Added a progress message to queue job
 
 ### Changed
 - Refactored much of the modal form structure to accommodate strategies
