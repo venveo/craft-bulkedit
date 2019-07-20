@@ -5,14 +5,10 @@
   <p>Editing <strong>{{ elementIds|length }}</strong> elements on site
     <strong>{{ site.name }} ({{ site.language }})</strong></p>
   {% if fieldWrappers|length %}
-    <p>Select the fields you would like to edit:</p>
     <form action="" method="post" accept-charset="UTF-8">
       {{ csrfInput() }}
-      <input type="hidden" name="action"
-             value="bulkedit/bulk-edit/edit">
-      {% for elementId in elementIds %}
-        <input type="hidden" name="elementIds[]" value="{{ elementId }}">
-      {% endfor %}
+      {{ actionInput('bulkedit/bulk-edit/edit') }}
+      <input type="hidden" name="elementIds" value="{{ elementIds|join(',') }}">
       <input type="hidden" name="siteId" value="{{ site.id }}">
       <table class="data fullwidth" id="fields-table">
         <thead>

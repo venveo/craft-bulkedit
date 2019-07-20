@@ -2,9 +2,7 @@
 
 <div class="bulkedit field-edit-modal">
   <form id="bulk-edit-values-modal">
-  {% for elementId in elementIds %}
-    <input type="hidden" name="elementIds[]" value="{{ elementId }}">
-  {% endfor %}
+  <input type="hidden" name="elementIds" value="{{ elementIds|join(',') }}">
   <input type="hidden" name="siteId" value="{{ site.id }}">
   {% for field in fields %}
     <input type="hidden" name="fieldMeta[{{ loop.index0 }}][id]" value="{{ field.id }}">

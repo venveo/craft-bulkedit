@@ -88,7 +88,7 @@ class BulkEditController extends Controller
         $this->requireAcceptsJson();
 
 
-        $elementIds = array_values(Craft::$app->getRequest()->getRequiredParam('elementIds'));
+        $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
         $requestId = Craft::$app->getRequest()->getRequiredParam('requestId');
         $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
         $fields = Craft::$app->getRequest()->getRequiredParam('fields');
@@ -113,6 +113,7 @@ class BulkEditController extends Controller
             throw new \Exception('Could not find all fields requested');
         }
 
+        $elementIds = explode(',', $elementIds);
         $elements = Element::findAll($elementIds);
         if (count($elements) !== count($elementIds)) {
             throw new \Exception('Could not find all elements requested');
@@ -195,6 +196,8 @@ class BulkEditController extends Controller
             }
             $keyedFieldValues[$fieldId] = $value;
         }
+
+        $elementIds = explode(',', $elementIds);
 
         $context = new EditContext();
         $context->ownerId = \Craft::$app->getUser()->getIdentity()->id;
