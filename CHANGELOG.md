@@ -1,6 +1,6 @@
 # Bulk Edit Changelog
 
-## Unreleased
+## 1.1.0 - 2019-07-21
 ### Added
 - Strategy selection: replace, merge, or subtract
 - Added support for bulk editing custom fields on Categories
