@@ -2,6 +2,8 @@
 
 namespace venveo\bulkedit\elements\processors;
 
+use craft\commerce\records\Product;
+use craft\commerce\records\ProductType;
 use craft\elements\Category;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
@@ -10,7 +12,7 @@ use craft\records\FieldLayout;
 use craft\services\Users;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 
-class CategoryProcessor extends AbstractElementTypeProcessor
+class ProductProcessor extends AbstractElementTypeProcessor
 {
 
     /**
@@ -21,18 +23,18 @@ class CategoryProcessor extends AbstractElementTypeProcessor
     public static function getLayoutsFromElementIds($elementIds): array
     {
         // Get the category groups (there *should* only be one)
-        $groups = \craft\records\Category::find()
-            ->select('groupId')
+        $types = Product::find()
+            ->select('typeId')
             ->distinct(true)
             ->limit(null)
             ->where(['IN', '[[id]]', $elementIds])
             ->asArray()
             ->all();
-        $groupIds = ArrayHelper::getColumn($groups, 'groupId');
+        $typeIds = ArrayHelper::getColumn($types, 'typeId');
 
-        $layouts = CategoryGroup::find()
+        $layouts = ProductType::find()
             ->select('fieldLayoutId')
-            ->where(['IN', '[[id]]', $groupIds])
+            ->where(['IN', '[[id]]', $typeIds])
             ->asArray()
             ->all();
         $layoutIds = ArrayHelper::getColumn($layouts, 'fieldLayoutId');
@@ -48,6 +50,6 @@ class CategoryProcessor extends AbstractElementTypeProcessor
      */
     public static function getType(): string
     {
-        return get_class(new Category);
+        return get_class(new \craft\commerce\elements\Product);
     }
 }

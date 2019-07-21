@@ -12,6 +12,7 @@ namespace venveo\bulkedit;
 
 use craft\base\Element;
 use craft\base\Plugin as BasePlugin;
+use craft\commerce\elements\Product;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
@@ -62,6 +63,12 @@ class Plugin extends BasePlugin
         );
 
         Event::on(User::class, Element::EVENT_REGISTER_ACTIONS,
+            function (RegisterElementActionsEvent $event) {
+                $event->actions[] = BulkEditElementAction::class;
+            }
+        );
+
+        Event::on(Product::class, Element::EVENT_REGISTER_ACTIONS,
             function (RegisterElementActionsEvent $event) {
                 $event->actions[] = BulkEditElementAction::class;
             }

@@ -15,7 +15,6 @@ use craft\base\Component;
 use craft\base\Element;
 use craft\base\Field;
 use craft\base\FieldInterface;
-use craft\elements\Entry;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\BaseRelationField;
 use craft\fields\Checkboxes;
@@ -35,6 +34,7 @@ use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\elements\processors\AssetProcessor;
 use venveo\bulkedit\elements\processors\CategoryProcessor;
 use venveo\bulkedit\elements\processors\EntryProcessor;
+use venveo\bulkedit\elements\processors\ProductProcessor;
 use venveo\bulkedit\elements\processors\UserProcessor;
 use venveo\bulkedit\models\FieldWrapper;
 use venveo\bulkedit\records\EditContext;
@@ -162,7 +162,7 @@ class BulkEdit extends Component
                 $historyItem->originalValue = \GuzzleHttp\json_encode($originalValue);
                 $historyItem->status = 'completed';
                 $field = \Craft::$app->fields->getFieldByHandle($fieldHandle);
-                switch($historyItem->strategy) {
+                switch ($historyItem->strategy) {
                     case 'replace':
                         $element->setFieldValue($fieldHandle, $newValue);
                         break;
@@ -173,7 +173,7 @@ class BulkEdit extends Component
                             $element->setFieldValue($fieldHandle, $ids);
 
                         } else {
-                            throw new \Exception("Can't merge field: ". $fieldHandle);
+                            throw new \Exception("Can't merge field: " . $fieldHandle);
                         }
                         break;
                     case 'subtract':
@@ -183,7 +183,7 @@ class BulkEdit extends Component
                             $element->setFieldValue($fieldHandle, $ids);
 
                         } else {
-                            throw new \Exception("Can't merge field: ". $fieldHandle);
+                            throw new \Exception("Can't merge field: " . $fieldHandle);
                         }
                         break;
 
@@ -261,7 +261,8 @@ class BulkEdit extends Component
      * @param $elementType
      * @return AbstractElementTypeProcessor
      */
-    public function getElementTypeProcessor($elementType) {
+    public function getElementTypeProcessor($elementType)
+    {
         $processors = [
             EntryProcessor::class,
             UserProcessor::class,
@@ -269,12 +270,16 @@ class BulkEdit extends Component
             AssetProcessor::class,
         ];
 
+        if (Craft::$app->plugins->isPluginInstalled('commerce')) {
+            $processors[] = ProductProcessor::class;
+        }
+
         $event = new RegisterComponentTypesEvent();
         $event->types = &$processors;
         $this->trigger(self::EVENT_REGISTER_ELEMENT_PROCESSORS, $event);
 
         $processorsKeyedByClass = [];
-        foreach($processors as $processor) {
+        foreach ($processors as $processor) {
             $reflection = new \ReflectionClass($processor);
             /** @var AbstractElementTypeProcessor $instance */
             $instance = $reflection->newInstanceWithoutConstructor();
