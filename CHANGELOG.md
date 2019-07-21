@@ -15,6 +15,9 @@
 - Refactored much of the modal form structure to accommodate strategies
 - Code cleaning & abstraction
 
+### Removed
+- Don't save revisions of entries anymore
+
 ## 1.0.5 - 2019-04-08
 ### Fixed
 - Fixed issue with unescaped HTML in field instructions breaking editor
