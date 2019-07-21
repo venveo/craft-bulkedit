@@ -30,6 +30,7 @@ single entry selected.
 post date, etc)
 * Validation is not enforced when you're editing these fields, this means you can end up with elements with fields in 
 potentially erroneous states (for example, removing all content on a required field)
+* The queue will not kick-in automatically, you'll need to make sure you refresh the page after saving
 
 ## Steps to use:
 ![Screenshot](resources/img/screenshot1.png)
