@@ -105,14 +105,14 @@ class BulkEdit extends Component
      * Gets all unique elements from incomplete bulk edit tasks
      *
      * @param EditContext $context
-     * @return int[] pending element IDs
+     * @return \yii\db\ActiveQuery
      */
-    public function getPendingElementIdsFromContext(EditContext $context): array
+    public function getPendingElementsHistoriesFromContext(EditContext $context): \yii\db\ActiveQuery
     {
-        $items = array_keys(History::find()
+        $items = History::find()
             ->limit(null)
             ->where(['=', 'contextId', $context->id])
-            ->andWhere(['=', 'status', 'pending'])->indexBy('elementId')->all());
+            ->andWhere(['=', 'status', 'pending'])->indexBy('elementId');
 
         return $items;
     }

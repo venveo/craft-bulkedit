@@ -15,6 +15,7 @@ use craft\base\ElementInterface;
 use craft\queue\BaseJob;
 use venveo\bulkedit\Plugin;
 use venveo\bulkedit\records\EditContext;
+use venveo\bulkedit\records\History;
 use yii\base\Exception;
 
 /**
@@ -41,10 +42,14 @@ class SaveBulkEditJob extends BaseJob
      */
     public function execute($queue = null)
     {
-        $elementIds = Plugin::$plugin->bulkEdit->getPendingElementIdsFromContext($this->context);
-        $totalSteps = count($elementIds);
+        $elementHistories = Plugin::$plugin->bulkEdit->getPendingElementsHistoriesFromContext($this->context);
+        $totalSteps = $elementHistories->count();
         try {
-            foreach ($elementIds as $key => $elementId) {
+            $currentRow = 0;
+            /**
+             * @var History $elementHistory */
+            foreach ($elementHistories->each() as $elementHistory) {
+                $elementId = $elementHistory->elementId;
                 /** @var ElementInterface $element */
                 $element = Craft::$app->getElements()->getElementById($elementId, null, $this->context->siteId);
                 if (!$element) {
@@ -66,15 +71,15 @@ class SaveBulkEditJob extends BaseJob
                 } catch (\Throwable $e) {
                     throw $e;
                 }
-
-                if (($key + 1) === $totalSteps) {
+                if (($currentRow + 1) === (int)$totalSteps) {
                     try {
                         $this->context->delete();
                     } catch (\Exception $e) {
                         throw new Exception('Couldn’t delete context: ' . $e->getMessage());
                     }
                 }
-                $this->setProgress($queue, ($key + 1) / $totalSteps, 'Element ' . ($key + 1) . ' of ' . $totalSteps);
+                $this->setProgress($queue, ($currentRow + 1) / $totalSteps, 'Element ' . ($currentRow + 1) . ' of ' . $totalSteps);
+                $currentRow++;
             }
         } catch (\Exception $e) {
             Craft::error('Failed to save... ' . $e->getMessage(), __METHOD__);

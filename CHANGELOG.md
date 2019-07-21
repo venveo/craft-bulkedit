@@ -16,6 +16,8 @@
 ### Changed
 - Refactored much of the modal form structure to accommodate strategies
 - Code cleaning & abstraction
+- The queue now runs automatically after saving a job
+- The queue jobs now batch elements properly
 
 ### Removed
 - Don't save revisions of entries anymore
