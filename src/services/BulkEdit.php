@@ -163,10 +163,10 @@ class BulkEdit extends Component
                 $historyItem->status = 'completed';
                 $field = \Craft::$app->fields->getFieldByHandle($fieldHandle);
                 switch ($historyItem->strategy) {
-                    case 'replace':
+                    case self::STRATEGY_REPLACE:
                         $element->setFieldValue($fieldHandle, $newValue);
                         break;
-                    case 'merge':
+                    case self::STRATEGY_MERGE:
                         if ($field && $field instanceof BaseRelationField) {
                             $ids = $originalValue->ids();
                             $ids = array_merge($ids, $newValue);
@@ -176,14 +176,13 @@ class BulkEdit extends Component
                             throw new \Exception("Can't merge field: " . $fieldHandle);
                         }
                         break;
-                    case 'subtract':
+                    case self::STRATEGY_SUBTRACT:
                         if ($field && $field instanceof BaseRelationField) {
                             $ids = $originalValue->ids();
                             $ids = array_diff($ids, $newValue);
                             $element->setFieldValue($fieldHandle, $ids);
-
                         } else {
-                            throw new \Exception("Can't merge field: " . $fieldHandle);
+                            throw new \Exception("Can't subtract field: " . $fieldHandle);
                         }
                         break;
 
@@ -258,8 +257,11 @@ class BulkEdit extends Component
     }
 
     /**
+     * Retrieves the processor for a type of element. The processor determines how to do things like get the field
+     * layout.
      * @param $elementType
      * @return AbstractElementTypeProcessor
+     * @throws \ReflectionException
      */
     public function getElementTypeProcessor($elementType)
     {
