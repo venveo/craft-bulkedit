@@ -53,7 +53,7 @@ class SaveBulkEditJob extends BaseJob
                     Craft::info('Starting processing bulk edit job', __METHOD__);
                     Plugin::$plugin->bulkEdit->processHistoryItemsForElement($history, $element);
                 } catch (\Exception $e) {
-                    Craft::error('Could not save element in bulk edit job... '. $e->getMessage(), __METHOD__);
+                    Craft::error('Could not save element in bulk edit job... ' . $e->getMessage(), __METHOD__);
                     throw new Exception('Couldn’t save element ' . $element->id . ' (' . get_class($element) . ')');
                 } catch (\Throwable $e) {
                     throw $e;
@@ -66,10 +66,10 @@ class SaveBulkEditJob extends BaseJob
                         throw new Exception('Couldn’t delete context: ' . $e->getMessage());
                     }
                 }
-                $this->setProgress($queue, ($key + 1) / $totalSteps, 'Element '. ($key + 1) . ' of '. $totalSteps);
+                $this->setProgress($queue, ($key + 1) / $totalSteps, 'Element ' . ($key + 1) . ' of ' . $totalSteps);
             }
         } catch (\Exception $e) {
-            Craft::error('Failed to save... '. $e->getMessage(), __METHOD__);
+            Craft::error('Failed to save... ' . $e->getMessage(), __METHOD__);
             throw $e;
         }
     }

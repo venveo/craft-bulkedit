@@ -2,10 +2,7 @@
 
 namespace venveo\bulkedit\migrations;
 
-use venveo\bulkedit\Plugin;
-
 use Craft;
-use craft\config\DbConfig;
 use craft\db\Migration;
 
 /**
@@ -59,10 +56,10 @@ class Install extends Migration
             $this->createTable(
                 '{{%bulkedit_editcontext}}',
                 [
-                    'id'          => $this->primaryKey(),
+                    'id' => $this->primaryKey(),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
-                    'uid'         => $this->uid(),
+                    'uid' => $this->uid(),
 
                     'siteId' => $this->integer()->notNull(),
                     'ownerId' => $this->integer()->notNull(),
@@ -73,11 +70,11 @@ class Install extends Migration
             $this->createTable(
                 '{{%bulkedit_history}}',
                 [
-                    'id'          => $this->primaryKey(),
+                    'id' => $this->primaryKey(),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
                     'status' => $this->string()->notNull()->defaultValue('pending'),
-                    'uid'         => $this->uid(),
+                    'uid' => $this->uid(),
 
                     'contextId' => $this->integer()->notNull(),
                     'elementId' => $this->integer()->notNull(),

@@ -3,11 +3,9 @@
 namespace venveo\bulkedit\elements\processors;
 
 use craft\elements\Category;
-use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\records\CategoryGroup;
 use craft\records\FieldLayout;
-use craft\services\Users;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 
 class CategoryProcessor extends AbstractElementTypeProcessor

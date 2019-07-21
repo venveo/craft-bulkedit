@@ -21,8 +21,8 @@ class UserProcessor extends AbstractElementTypeProcessor
         $fieldLayouts = $projectConfig->get(Users::CONFIG_USERLAYOUT_KEY);
         $fieldLayoutsUIDs = array_keys($fieldLayouts);
         $layouts = FieldLayout::find()
-        ->where(['in', 'uid', $fieldLayoutsUIDs])
-        ->all();
+            ->where(['in', 'uid', $fieldLayoutsUIDs])
+            ->all();
         return $layouts;
     }
 

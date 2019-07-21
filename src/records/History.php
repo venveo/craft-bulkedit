@@ -33,8 +33,6 @@ class History extends ActiveRecord
     }
 
 
-
-
     /**
      * @return ActiveQueryInterface The relational query object.
      */

@@ -4,12 +4,8 @@ namespace venveo\bulkedit\elements\processors;
 
 use craft\commerce\records\Product;
 use craft\commerce\records\ProductType;
-use craft\elements\Category;
-use craft\elements\User;
 use craft\helpers\ArrayHelper;
-use craft\records\CategoryGroup;
 use craft\records\FieldLayout;
-use craft\services\Users;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 
 class ProductProcessor extends AbstractElementTypeProcessor
