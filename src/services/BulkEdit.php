@@ -37,6 +37,7 @@ use venveo\bulkedit\elements\processors\EntryProcessor;
 use venveo\bulkedit\elements\processors\ProductProcessor;
 use venveo\bulkedit\elements\processors\UserProcessor;
 use venveo\bulkedit\models\FieldWrapper;
+use venveo\bulkedit\queue\jobs\SaveBulkEditJob;
 use venveo\bulkedit\records\EditContext;
 use venveo\bulkedit\records\History;
 
@@ -58,8 +59,9 @@ class BulkEdit extends Component
      * Get all distinct field layouts from a set of elements
      *
      * @param $elementIds
+     * @param $elementType
      * @return FieldWrapper[] fields
-     * @throws \Exception
+     * @throws \ReflectionException
      */
     public function getFieldsForElementIds($elementIds, $elementType)
     {
@@ -293,5 +295,60 @@ class BulkEdit extends Component
             return $processorsKeyedByClass[$elementType];
         }
         return null;
+    }
+
+    /**
+     * Saves an element context
+     * @param $elementType
+     * @param $siteId
+     * @param $elementIds
+     * @param $fieldIds
+     * @param $keyedFieldValues
+     * @throws \yii\db\Exception
+     * @throws \ReflectionException
+     */
+    public function saveContext($elementType, $siteId, $elementIds, $fieldIds, $keyedFieldValues)
+    {
+        /** @var AbstractElementTypeProcessor $processor */
+        $processor = $this->getElementTypeProcessor($elementType);
+
+        if (!$processor::hasPermission($elementIds, Craft::$app->user)) {
+            throw new \Exception('Missing permissions');
+        }
+
+        $context = new EditContext();
+        $context->ownerId = \Craft::$app->getUser()->getIdentity()->id;
+        $context->siteId = $siteId;
+        $context->elementType = $elementType;
+        $context->elementIds = \GuzzleHttp\json_encode($elementIds);
+        $context->fieldIds = \GuzzleHttp\json_encode($fieldIds);
+        $context->save();
+
+        $rows = [];
+        foreach ($elementIds as $elementId) {
+            foreach ($fieldIds as $fieldId) {
+                $strategy = $fieldStrategies[$fieldId] ?? 'replace';
+
+                $rows[] = [
+                    'pending',
+                    $context->id,
+                    (int)$elementId,
+                    (int)$fieldId,
+                    (int)$siteId,
+                    '[]',
+                    \GuzzleHttp\json_encode($keyedFieldValues[$fieldId]),
+                    $strategy
+                ];
+            }
+        }
+
+        $cols = ['status', 'contextId', 'elementId', 'fieldId', 'siteId', 'originalValue', 'newValue', 'strategy'];
+        \Craft::$app->db->createCommand()->batchInsert(History::tableName(), $cols, $rows)->execute();
+
+
+        $job = new SaveBulkEditJob([
+            'context' => $context
+        ]);
+        \Craft::$app->getQueue()->push($job);
     }
 }

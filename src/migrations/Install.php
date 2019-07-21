@@ -65,6 +65,7 @@ class Install extends Migration
                     'ownerId' => $this->integer()->notNull(),
                     'elementIds' => $this->string(1024)->notNull(),
                     'fieldIds' => $this->string(1024)->notNull(),
+                    'elementType' => $this->string()->notNull(),
                 ]
             );
             $this->createTable(

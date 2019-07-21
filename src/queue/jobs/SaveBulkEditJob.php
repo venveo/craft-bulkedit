@@ -11,6 +11,7 @@
 namespace venveo\bulkedit\queue\jobs;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\queue\BaseJob;
 use venveo\bulkedit\Plugin;
 use venveo\bulkedit\records\EditContext;
@@ -44,10 +45,17 @@ class SaveBulkEditJob extends BaseJob
         $totalSteps = count($elementIds);
         try {
             foreach ($elementIds as $key => $elementId) {
+                /** @var ElementInterface $element */
                 $element = Craft::$app->getElements()->getElementById($elementId, null, $this->context->siteId);
                 if (!$element) {
+                    Craft::warning('Could not locate an element in a bulk save job: ' . $elementId, __METHOD__);
                     continue;
                 }
+
+                if (get_class($element) !== $this->context->elementType) {
+                    throw new \Exception('Unexpected element type encountered!');
+                }
+
                 $history = Plugin::$plugin->bulkEdit->getPendingHistoryForElement($this->context, $element->id)->all();
                 try {
                     Craft::info('Starting processing bulk edit job', __METHOD__);

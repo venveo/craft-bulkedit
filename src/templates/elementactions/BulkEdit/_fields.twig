@@ -10,6 +10,7 @@
       {{ actionInput('bulkedit/bulk-edit/edit') }}
       <input type="hidden" name="elementIds" value="{{ elementIds|join(',') }}">
       <input type="hidden" name="siteId" value="{{ site.id }}">
+      <input type="hidden" name="elementType" value="{{ elementType }}">
       <table class="data fullwidth" id="fields-table">
         <thead>
         <th scope="col" class="col-header">

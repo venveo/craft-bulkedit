@@ -6,7 +6,9 @@ use craft\elements\Category;
 use craft\helpers\ArrayHelper;
 use craft\records\CategoryGroup;
 use craft\records\FieldLayout;
+use craft\web\User;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
+use venveo\bulkedit\Plugin;
 
 class CategoryProcessor extends AbstractElementTypeProcessor
 {
@@ -47,5 +49,16 @@ class CategoryProcessor extends AbstractElementTypeProcessor
     public static function getType(): string
     {
         return get_class(new Category);
+    }
+
+    /**
+     * Return whether a given user has permission to perform bulk edit actions on these elements
+     * @param $elementIds
+     * @param $user
+     * @return bool
+     */
+    public static function hasPermission($elementIds, User $user): bool
+    {
+        return $user->checkPermission(Plugin::PERMISSION_BULKEDIT_CATEGORIES);
     }
 }
