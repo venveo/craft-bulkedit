@@ -159,6 +159,8 @@ Craft.BulkEditModal = Garnish.Modal.extend(
             const formValues = this.$container.find('#bulk-edit-values-modal').serializeArray();
             Craft.postActionRequest('venveo-bulk-edit/bulk-edit/save-context', formValues, function(response) {
                 this.hide();
+                Craft.cp.trackJobProgress(false, true);
+                Craft.cp.runQueue();
             }.bind(this));
         },
 

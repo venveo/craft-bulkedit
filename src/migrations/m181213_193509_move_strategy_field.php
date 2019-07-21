@@ -2,7 +2,6 @@
 
 namespace venveo\bulkedit\migrations;
 
-use Craft;
 use craft\db\Migration;
 
 /**
@@ -24,7 +23,7 @@ class m181213_193509_move_strategy_field extends Migration
      */
     public function safeDown()
     {
-        echo "m181213_193509_move_strategy_field cannot be reverted.\n";
-        return false;
+        $this->dropColumn('{{%bulkedit_history}}', 'strategy');
+        $this->addColumn('{{%bulkedit_editcontext}}', 'strategy', $this->string(16)->notNull()->defaultValue('replace'));
     }
 }

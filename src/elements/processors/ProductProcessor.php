@@ -4,13 +4,11 @@ namespace venveo\bulkedit\elements\processors;
 
 use craft\commerce\records\Product;
 use craft\commerce\records\ProductType;
-use craft\elements\Category;
-use craft\elements\User;
 use craft\helpers\ArrayHelper;
-use craft\records\CategoryGroup;
 use craft\records\FieldLayout;
-use craft\services\Users;
+use craft\web\User;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
+use venveo\bulkedit\Plugin;
 
 class ProductProcessor extends AbstractElementTypeProcessor
 {
@@ -51,5 +49,16 @@ class ProductProcessor extends AbstractElementTypeProcessor
     public static function getType(): string
     {
         return get_class(new \craft\commerce\elements\Product);
+    }
+
+    /**
+     * Return whether a given user has permission to perform bulk edit actions on these elements
+     * @param $elementIds
+     * @param $user
+     * @return bool
+     */
+    public static function hasPermission($elementIds, User $user): bool
+    {
+        return $user->checkPermission(Plugin::PERMISSION_BULKEDIT_PRODUCTS);
     }
 }

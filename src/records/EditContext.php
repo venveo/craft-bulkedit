@@ -16,13 +16,11 @@ use yii\db\ActiveQueryInterface;
  * @property User $owner
  * @property \yii\db\ActiveQueryInterface $historyItems
  * @property string fieldIds
+ * @property string elementType
  * @property integer id
  */
 class EditContext extends ActiveRecord
 {
-    /*
-     * @inheritdoc
-     */
     public static function tableName()
     {
         return '{{%bulkedit_editcontext}}';

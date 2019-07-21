@@ -10,10 +10,14 @@
 - Added `EVENT_REGISTER_ELEMENT_PROCESSORS` to allow modules/plugins an opportunity to register an element processor
 - Added `EVENT_REGISTER_SUPPORTED_FIELDS` to allow modules/plugins an opportunity to register a supported field
 - Added a progress message to queue job
+- Added permissions for each element type
+- Edit contexts now ensure the element types match that of the original request
 
 ### Changed
 - Refactored much of the modal form structure to accommodate strategies
 - Code cleaning & abstraction
+- The queue now runs automatically after saving a job
+- The queue jobs now batch elements properly
 
 ### Removed
 - Don't save revisions of entries anymore

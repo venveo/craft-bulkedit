@@ -1,5 +1,36 @@
-# Bulk Edit plugin for Craft CMS 3.x
-This plugin is built to offer extended editing functionality of a set of Craft entries.
+# Bulk Edit plugin for Craft CMS 3.2
+
+## Overview
+The Bulk Edit plugin adds an action to supported element index pages that allows you to edit fields on a large number of
+elements at once. Currently, the following element types are supported:
+- Entries
+- Categories
+- Assets
+- Users
+- Craft Commerce Products
+
+Additionally, some fields support different strategies for the edit process. At the moment, any field that works with
+ "relations" (such as Entries, Categories, Assets, etc) supports the following strategies:
+ - Replace: Replaces all content in the field
+ - Merge: Merges the selected elements into the relation field
+ - Subtract: Removes the selected elements from the relation field
+
+## Instructions
+1. Navigate to a supported element index page and select any number of elements
+2. Click the gear at the top of the page and select "Bulk Edit"
+3. Enable the light-switches next to the fields you're interested in editing and select a strategy
+4. Click next and enter the content for the fields
+5. Once you click Save, a task will be dispatched to the queue, at which point you will need to refresh the page for 
+Craft to pick it up. After the queue has finished, you may reload the page and see your changes.
+
+## Limitation & Issues
+* Custom fields and Matrix fields are not currently supported due to issues that arise when a field is rendered without 
+single entry selected.
+* Currently, there isn't a way to edit properties on elements that are not custom fields (for example, title, slug, 
+post date, etc)
+* Validation is not enforced when you're editing these fields, this means you can end up with elements with fields in 
+potentially erroneous states (for example, removing all content on a required field)
+* After the queue finishes running, make sure you refresh the page to see the updates in the element index
 
 ## Steps to use:
 ![Screenshot](resources/img/screenshot1.png)
@@ -8,7 +39,7 @@ This plugin is built to offer extended editing functionality of a set of Craft e
 
 ## Requirements
 
-This plugin requires Craft CMS 3.0.0 or later.
+This plugin requires Craft CMS 3.2.0 or later.
 
 ## Installation
 
@@ -23,8 +54,5 @@ To install the plugin, follow these instructions.
         composer require venveo/craft-bulkedit
 
 3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Bulk Edit.
-
-## Known Issues
-* I've had to disabled custom field support as well as Matrix support for the moment. Some refactoring will need to be done to support these types of fields.
 
 Brought to you by [Venveo](https://venveo.com)

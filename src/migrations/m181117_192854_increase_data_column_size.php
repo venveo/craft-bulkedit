@@ -2,7 +2,6 @@
 
 namespace venveo\bulkedit\migrations;
 
-use Craft;
 use craft\db\Migration;
 
 /**

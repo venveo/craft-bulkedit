@@ -57,6 +57,7 @@ class BulkEditController extends Controller
         $view = \Craft::$app->getView();
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_fields', [
             'fieldWrappers' => $fields,
+            'elementType' => $elementType,
             'bulkedit' => $service,
             'elementIds' => $elementIds,
             'site' => $site
@@ -90,6 +91,7 @@ class BulkEditController extends Controller
 
         $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
         $requestId = Craft::$app->getRequest()->getRequiredParam('requestId');
+        $elementType = Craft::$app->getRequest()->getRequiredParam('elementType');
         $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
         $fields = Craft::$app->getRequest()->getRequiredParam('fields');
 
@@ -144,6 +146,7 @@ class BulkEditController extends Controller
 
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_edit', [
             'fields' => $fieldModels,
+            'elementType' => $elementType,
             'elementIds' => $elementIds,
             'fieldData' => $enabledFields,
             'site' => $site
@@ -171,8 +174,8 @@ class BulkEditController extends Controller
         $this->requireAcceptsJson();
 
         $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
+        $elementType = Craft::$app->getRequest()->getRequiredParam('elementType');
         $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
-//        $fieldIds = array_values(Craft::$app->getRequest()->getRequiredParam('fieldIds'));
         $fieldMeta = array_values(Craft::$app->getRequest()->getRequiredParam('fieldMeta'));
 
         $fieldStrategies = [];
@@ -199,42 +202,14 @@ class BulkEditController extends Controller
 
         $elementIds = explode(',', $elementIds);
 
-        $context = new EditContext();
-        $context->ownerId = \Craft::$app->getUser()->getIdentity()->id;
-        $context->siteId = $siteId;
-        $context->elementIds = \GuzzleHttp\json_encode($elementIds);
-        $context->fieldIds = \GuzzleHttp\json_encode($fieldIds);
-        $context->save();
+        try {
+            Plugin::$plugin->bulkEdit->saveContext($elementType, $siteId, $elementIds, $fieldIds, $keyedFieldValues);
 
-        $rows = [];
-        foreach ($elementIds as $elementId) {
-            foreach ($fieldIds as $fieldId) {
-                $strategy = $fieldStrategies[$fieldId] ?? 'replace';
-
-                $rows[] = [
-                    'pending',
-                    $context->id,
-                    (int)$elementId,
-                    (int)$fieldId,
-                    (int)$siteId,
-                    '[]',
-                    \GuzzleHttp\json_encode($keyedFieldValues[$fieldId]),
-                    $strategy
-                ];
-            }
+            return $this->asJson([
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            return $this->asErrorJson('Failed to save context');
         }
-
-        $cols = ['status', 'contextId', 'elementId', 'fieldId', 'siteId', 'originalValue', 'newValue', 'strategy'];
-        \Craft::$app->db->createCommand()->batchInsert(History::tableName(), $cols, $rows)->execute();
-
-
-        $job = new SaveBulkEditJob([
-            'context' => $context
-        ]);
-        \Craft::$app->getQueue()->push($job);
-
-        return $this->asJson([
-            'success' => true
-        ]);
     }
 }

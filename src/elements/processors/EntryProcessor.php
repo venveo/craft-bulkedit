@@ -4,7 +4,9 @@ namespace venveo\bulkedit\elements\processors;
 
 use craft\elements\Entry;
 use craft\records\FieldLayout;
+use craft\web\User;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
+use venveo\bulkedit\Plugin;
 
 class EntryProcessor extends AbstractElementTypeProcessor
 {
@@ -35,5 +37,16 @@ class EntryProcessor extends AbstractElementTypeProcessor
     public static function getType(): string
     {
         return get_class(new Entry);
+    }
+
+    /**
+     * Return whether a given user has permission to perform bulk edit actions on these elements
+     * @param $elementIds
+     * @param $user
+     * @return bool
+     */
+    public static function hasPermission($elementIds, User $user): bool
+    {
+        return $user->checkPermission(Plugin::PERMISSION_BULKEDIT_ENTRIES);
     }
 }
