@@ -2,7 +2,7 @@
 
 namespace venveo\bulkedit\migrations;
 
-use venveo\bulkedit\BulkEdit;
+use venveo\bulkedit\Plugin;
 
 use Craft;
 use craft\config\DbConfig;
@@ -68,7 +68,6 @@ class Install extends Migration
                     'ownerId' => $this->integer()->notNull(),
                     'elementIds' => $this->string(1024)->notNull(),
                     'fieldIds' => $this->string(1024)->notNull(),
-                    'strategy' => $this->string()->notNull()->defaultValue('replace'),
                 ]
             );
             $this->createTable(
@@ -86,6 +85,7 @@ class Install extends Migration
                     'siteId' => $this->integer()->notNull(),
                     'originalValue' => $this->text(),
                     'newValue' => $this->text(),
+                    'strategy' => $this->string(16)->notNull()->defaultValue('replace')
                 ]
             );
         }

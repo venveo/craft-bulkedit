@@ -20,6 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property string originalValue
  * @property string newValue
  * @property integer elementId
+ * @property string strategy
  */
 class History extends ActiveRecord
 {

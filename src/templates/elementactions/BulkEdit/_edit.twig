@@ -2,31 +2,32 @@
 
 <div class="bulkedit field-edit-modal">
   <form id="bulk-edit-values-modal">
-  {% for elementId in elementIds %}
-    <input type="hidden" name="elementIds[]" value="{{ elementId }}">
-  {% endfor %}
+  <input type="hidden" name="elementIds" value="{{ elementIds|join(',') }}">
   <input type="hidden" name="siteId" value="{{ site.id }}">
   {% for field in fields %}
-    <input type="hidden" name="fieldIds[]" value="{{ field.id }}">
+    <input type="hidden" name="fieldMeta[{{ loop.index0 }}][id]" value="{{ field.id }}">
+    <input type="hidden" name="fieldMeta[{{ loop.index0 }}][strategy]" value="{{ fieldData[field.id].strategy }}">
     <div class="pane">
       {% namespace 'fields' %}
         {% include "_includes/field" with {
           field:    field,
-          required: true,
-          siteId: site.id,
-          element:  baseElement,
-          static:   (static is defined ? static : null)
+          required: false,
+          siteId: site.id
         } only %}
       {% endnamespace %}
     </div>
+    <div class="field-edit-modal-bar">
+      <div class="buttons right">
+        <div class="btn" id="field-edit-cancel">Cancel</div>
+        <input type="submit" value="Save {{ elementIds|length }} Elements" class="btn submit"></div>
+    </div>
      {% else %}
     <p>It doesn't look like there are any fields that support bulk editing on these elements.</p>
+       <div class="field-edit-modal-bar">
+         <div class="buttons right">
+           <div class="btn" id="field-edit-cancel">Cancel</div>
+       </div>
+       </div>
   {% endfor %}
-
-  <div class="field-edit-modal-bar">
-    <div class="buttons right">
-      <div class="btn" id="field-edit-cancel">Cancel</div>
-      <input type="submit" value="Save {{ elementIds|length }} Elements" class="btn submit"></div>
-  </div>
   </form>
 </div>

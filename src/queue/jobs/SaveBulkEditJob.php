@@ -12,7 +12,7 @@ namespace venveo\bulkedit\queue\jobs;
 
 use Craft;
 use craft\queue\BaseJob;
-use venveo\bulkedit\BulkEdit;
+use venveo\bulkedit\Plugin;
 use venveo\bulkedit\records\EditContext;
 use yii\base\Exception;
 
@@ -32,9 +32,15 @@ class SaveBulkEditJob extends BaseJob
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * Saves bulk edited elements
+     * @param null $queue
+     * @throws \Throwable
+     */
     public function execute($queue = null)
     {
-        $elementIds = BulkEdit::$plugin->bulkEdit->getPendingElementIdsFromContext($this->context);
+        $elementIds = Plugin::$plugin->bulkEdit->getPendingElementIdsFromContext($this->context);
         $totalSteps = count($elementIds);
         try {
             foreach ($elementIds as $key => $elementId) {
@@ -42,10 +48,10 @@ class SaveBulkEditJob extends BaseJob
                 if (!$element) {
                     continue;
                 }
-                $history = BulkEdit::$plugin->bulkEdit->getPendingHistoryForElement($this->context, $element->id)->all();
+                $history = Plugin::$plugin->bulkEdit->getPendingHistoryForElement($this->context, $element->id)->all();
                 try {
                     Craft::info('Starting processing bulk edit job', __METHOD__);
-                    BulkEdit::$plugin->bulkEdit->processHistoryItemsForElement($history, $element);
+                    Plugin::$plugin->bulkEdit->processHistoryItemsForElement($history, $element);
                 } catch (\Exception $e) {
                     Craft::error('Could not save element in bulk edit job... '. $e->getMessage(), __METHOD__);
                     throw new Exception('Couldn’t save element ' . $element->id . ' (' . get_class($element) . ')');
@@ -60,8 +66,7 @@ class SaveBulkEditJob extends BaseJob
                         throw new Exception('Couldn’t delete context: ' . $e->getMessage());
                     }
                 }
-
-                $this->setProgress($queue, ($key + 1) / $totalSteps);
+                $this->setProgress($queue, ($key + 1) / $totalSteps, 'Element '. ($key + 1) . ' of '. $totalSteps);
             }
         } catch (\Exception $e) {
             Craft::error('Failed to save... '. $e->getMessage(), __METHOD__);
@@ -74,6 +79,7 @@ class SaveBulkEditJob extends BaseJob
 
     protected function defaultDescription(): string
     {
-        return Craft::t('venveo-bulk-edit', 'Bulk Edit in progress by {name}', ['name' => $this->context->owner->firstName]);
+        $name = $this->context->owner->firstName ?? $this->context->owner->email ?? '';
+        return Craft::t('venveo-bulk-edit', 'Bulk Edit in progress by {name}', ['name' => $name]);
     }
 }

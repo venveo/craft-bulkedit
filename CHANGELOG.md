@@ -1,5 +1,23 @@
 # Bulk Edit Changelog
 
+## 1.1.0 - 2019-07-21
+### Added
+- Strategy selection: replace, merge, or subtract
+- Added support for bulk editing custom fields on Categories
+- Added support for bulk editing custom fields on Users
+- Added support for bulk editing custom fields on Assets
+- Added support for bulk editing custom fields on Commerce Products
+- Added `EVENT_REGISTER_ELEMENT_PROCESSORS` to allow modules/plugins an opportunity to register an element processor
+- Added `EVENT_REGISTER_SUPPORTED_FIELDS` to allow modules/plugins an opportunity to register a supported field
+- Added a progress message to queue job
+
+### Changed
+- Refactored much of the modal form structure to accommodate strategies
+- Code cleaning & abstraction
+
+### Removed
+- Don't save revisions of entries anymore
+
 ## 1.0.5 - 2019-04-08
 ### Fixed
 - Fixed issue with unescaped HTML in field instructions breaking editor
@@ -12,6 +30,7 @@
 ## 1.0.3 - 2018-11-17
 ### Fixed
 - Potential error from field values that are too long to store in history
+
 ### Changed
 - Set element saving scenario to SCENARIO_ESSENTIALS
 

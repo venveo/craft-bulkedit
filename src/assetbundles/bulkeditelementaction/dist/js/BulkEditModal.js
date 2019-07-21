@@ -53,13 +53,10 @@ Craft.BulkEditModal = Garnish.Modal.extend(
             this.loadFields(elementIds)
         },
 
-        loadFieldEditor: function(fieldIds) {
-            Craft.postActionRequest('venveo-bulk-edit/bulk-edit/get-edit-screen', {
-                elementIds: this.elementIds,
-                siteId: this.siteId,
-                requestId: this.requestId,
-                fieldIds: fieldIds
-            }, function(response, textStatus) {
+        loadFieldEditor: function(data) {
+            // Make sure we tack on our request ID to the form submission...
+            data = data + '&requestId=' + this.requestId;
+            Craft.postActionRequest('venveo-bulk-edit/bulk-edit/get-edit-screen', data, function(response, textStatus) {
                 if (textStatus === 'success') {
                     if (response.success) {
                         if (response.requestId != this.requestId) {
@@ -92,17 +89,17 @@ Craft.BulkEditModal = Garnish.Modal.extend(
             this.$spinner.css({left: left, top: top, position: 'absolute'});
         },
 
-        /**
-         * Load an asset, using starting width and height, if applicable
-         * @param assetId
-         * @param startingWidth
-         * @param startingHeight
-         */
+
         loadFields: function(elementIds) {
             this._initSpinner();
             this.requestId++;
 
-            Craft.postActionRequest('venveo-bulk-edit/bulk-edit/get-fields', {elementIds: elementIds, requestId: this.requestId}, function(response, textStatus) {
+            Craft.postActionRequest('venveo-bulk-edit/bulk-edit/get-fields',
+                {
+                    elementIds: elementIds,
+                    requestId: this.requestId,
+                    elementType: Craft.elementIndex.elementType
+                }, function(response, textStatus) {
                 if (textStatus === 'success') {
                     if (response.success) {
                         if (response.requestId != this.requestId) {
@@ -167,10 +164,10 @@ Craft.BulkEditModal = Garnish.Modal.extend(
 
         _handleFieldSelectSubmit: function(e) {
             e.preventDefault();
-            const fieldIds = this._getCheckedFields();
+            const data = this.$container.find('form').serialize();
             this.$container.find('.field-edit-modal').remove();
             this._initSpinner();
-            this.loadFieldEditor(fieldIds);
+            this.loadFieldEditor(data);
         },
 
         _handleFieldSelect: function(e) {
