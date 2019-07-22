@@ -16,26 +16,16 @@ use craft\base\Element;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\events\RegisterComponentTypesEvent;
-use craft\fields\BaseRelationField;
-use craft\fields\Checkboxes;
-use craft\fields\Color;
-use craft\fields\Date;
-use craft\fields\Email;
-use craft\fields\Lightswitch;
-use craft\fields\MultiSelect;
-use craft\fields\Number;
-use craft\fields\PlainText;
-use craft\fields\RadioButtons;
-use craft\fields\Table;
-use craft\fields\Url;
 use craft\records\FieldLayout;
-use craft\redactor\Field as RedactorField;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
+use venveo\bulkedit\base\AbstractFieldProcessor;
 use venveo\bulkedit\elements\processors\AssetProcessor;
 use venveo\bulkedit\elements\processors\CategoryProcessor;
 use venveo\bulkedit\elements\processors\EntryProcessor;
 use venveo\bulkedit\elements\processors\ProductProcessor;
 use venveo\bulkedit\elements\processors\UserProcessor;
+use venveo\bulkedit\fields\processors\PlainTextProcessor;
+use venveo\bulkedit\fields\processors\RelationFieldProcessor;
 use venveo\bulkedit\models\FieldWrapper;
 use venveo\bulkedit\queue\jobs\SaveBulkEditJob;
 use venveo\bulkedit\records\EditContext;
@@ -53,7 +43,11 @@ class BulkEdit extends Component
     public const STRATEGY_SUBTRACT = 'subtract';
 
     public const EVENT_REGISTER_ELEMENT_PROCESSORS = 'registerElementProcessors';
-    public const EVENT_REGISTER_SUPPORTED_FIELDS = 'registerSupportedFields';
+    public const EVENT_REGISTER_FIELD_PROCESSORS = 'registerFieldProcessors';
+
+    // Memoized values
+    private static $_ELEMENT_TYPE_PROCESSORS;
+    private static $_FIELD_TYPE_PROCESSORS;
 
     /**
      * Get all distinct field layouts from a set of elements
@@ -63,7 +57,7 @@ class BulkEdit extends Component
      * @return FieldWrapper[] fields
      * @throws \ReflectionException
      */
-    public function getFieldsForElementIds($elementIds, $elementType)
+    public function getFieldsForElementIds($elementIds, $elementType): array
     {
         // Works for entries
         $processor = $this->getElementTypeProcessor($elementType);
@@ -91,18 +85,8 @@ class BulkEdit extends Component
         return $fields;
     }
 
-
     /**
-     * @param $id
-     * @return EditContext|null
-     */
-    public function getBulkEditContextFromId($id): ?EditContext
-    {
-        return EditContext::findOne($id);
-    }
-
-    /**
-     * Gets all unique elements from incomplete bulk edit tasks
+     * Gets all unique elements from incomplete bulk edit jobs
      *
      * @param EditContext $context
      * @return \yii\db\ActiveQuery
@@ -118,28 +102,18 @@ class BulkEdit extends Component
     }
 
     /**
-     * Gets all pending bulk edit tasks
+     * Gets all pending bulk edit changes for a particular job
      *
      * @param EditContext $context
      * @return \yii\db\ActiveQueryInterface
      */
-    public function getPendingHistoryFromContext(EditContext $context): \yii\db\ActiveQueryInterface
+    public function getPendingHistoryFromContext(EditContext $context, $elementId = null): \yii\db\ActiveQueryInterface
     {
-        return $context->getHistoryItems()->where(['=', 'status', 'pending']);
-    }
-
-    /**
-     * Gets all pending tasks for a particular element
-     *
-     * @param EditContext $context
-     * @param $elementId
-     * @return \yii\db\ActiveQueryInterface
-     */
-    public function getPendingHistoryForElement(EditContext $context, $elementId): \yii\db\ActiveQueryInterface
-    {
-        $items = $this->getPendingHistoryFromContext($context);
-        $items->where(['=', 'elementId', $elementId]);
-        return $items;
+        $query = $context->getHistoryItems()->where(['=', 'status', 'pending']);
+        if ($elementId !== null) {
+            $query->where(['=', 'elementId', $elementId]);
+        }
+        return $query;
     }
 
     /**
@@ -161,34 +135,15 @@ class BulkEdit extends Component
                 $fieldHandle = $historyItem->field->handle;
                 $newValue = \GuzzleHttp\json_decode($historyItem->newValue, true);
                 $originalValue = $element->getFieldValue($historyItem->field->handle);
+
+                // Store a snapshot of the original field value
                 $historyItem->originalValue = \GuzzleHttp\json_encode($originalValue);
                 $historyItem->status = 'completed';
+
                 $field = \Craft::$app->fields->getFieldByHandle($fieldHandle);
-                switch ($historyItem->strategy) {
-                    case self::STRATEGY_REPLACE:
-                        $element->setFieldValue($fieldHandle, $newValue);
-                        break;
-                    case self::STRATEGY_MERGE:
-                        if ($field && $field instanceof BaseRelationField) {
-                            $ids = $originalValue->ids();
-                            $ids = array_merge($ids, $newValue);
-                            $element->setFieldValue($fieldHandle, $ids);
 
-                        } else {
-                            throw new \Exception("Can't merge field: " . $fieldHandle);
-                        }
-                        break;
-                    case self::STRATEGY_SUBTRACT:
-                        if ($field && $field instanceof BaseRelationField) {
-                            $ids = $originalValue->ids();
-                            $ids = array_diff($ids, $newValue);
-                            $element->setFieldValue($fieldHandle, $ids);
-                        } else {
-                            throw new \Exception("Can't subtract field: " . $fieldHandle);
-                        }
-                        break;
-
-                }
+                $processor = $this->getFieldProcessor($field, $historyItem->strategy);
+                $processor::processElementField($element, $field, $historyItem->strategy, $newValue);
                 $historyItem->save();
                 Craft::info('Saved history item', __METHOD__);
             }
@@ -205,31 +160,48 @@ class BulkEdit extends Component
         }
     }
 
-    public function isFieldSupported(FieldInterface $field): bool
+    /**
+     * Gets a general list of all field types supported by the strategies we have
+     * @return array
+     */
+    public function getSupportedFieldTypes()
     {
-        $supportedFields = [
-            PlainText::class,
-            Number::class,
-            BaseRelationField::class,
-            Color::class,
-            Checkboxes::class,
-            Date::class,
-            Table::class,
-            RadioButtons::class,
-            Lightswitch::class,
-            Url::class,
-            Email::class,
-            MultiSelect::class
-        ];
-
-        // Add support for redactor
-        if (\Craft::$app->getPlugins()->isPluginEnabled('redactor')) {
-            $supportedFields[] = RedactorField::class;
+        $fieldProcessors = $this->getFieldProcessors();
+        $supportedFields = [];
+        /** @var AbstractFieldProcessor $fieldProcessor */
+        foreach ($fieldProcessors as $fieldProcessor) {
+            $fields = $fieldProcessor::getSupportedFields();
+            $supportedFields = array_merge($supportedFields, $fields);
         }
+        return $supportedFields;
+    }
 
-        $event = new RegisterComponentTypesEvent();
-        $event->types = &$supportedFields;
-        $this->trigger(self::EVENT_REGISTER_SUPPORTED_FIELDS, $event);
+    /**
+     *
+     * @param FieldInterface $field
+     * @return array
+     */
+    public function getProcessorsKeyedByStrategyForField(FieldInterface $field)
+    {
+        $processors = $this->getFieldProcessors();
+
+        $processorsByStrategy = [];
+
+        /** @var AbstractFieldProcessor $processor */
+        foreach ($processors as $processor) {
+            if (!$processor::supportsField($field)) {
+                continue;
+            }
+            foreach ($processor::getSupportedStrategies() as $strategy) {
+                $processorsByStrategy[$strategy][] = $processor;
+            }
+        }
+        return $processorsByStrategy;
+    }
+
+    public function isFieldSupported(FieldInterface $field, $strategy = null): bool
+    {
+        $supportedFields = $this->getSupportedFieldTypes();
 
         foreach ($supportedFields as $fieldItem) {
             if ($field instanceof $fieldItem) {
@@ -240,20 +212,29 @@ class BulkEdit extends Component
     }
 
     /**
-     * Gets an array of values for supported strategies on field types
+     * Gets an array of values for supported strategies on field types. This is used by the _fields template
      * @param FieldInterface $field
      * @return array
      */
-    public function getSupportedStrategiesForField(FieldInterface $field)
+    public function getSupportedStrategiesForField(FieldInterface $field): array
     {
-        $availableStrategies = [
-            ['value' => self::STRATEGY_REPLACE, 'label' => 'Replace']
-        ];
+        $processorsList = $this->getProcessorsKeyedByStrategyForField($field);
 
-        if ($field instanceof BaseRelationField) {
-            $availableStrategies[] = ['value' => self::STRATEGY_MERGE, 'label' => 'Merge'];
-            $availableStrategies[] = ['value' => self::STRATEGY_SUBTRACT, 'label' => 'Subtract'];
+        $availableStrategies = [];
+        foreach ($processorsList as $strategy => $processors) {
+            switch ($strategy) {
+                case self::STRATEGY_REPLACE:
+                    $availableStrategies[] = ['value' => self::STRATEGY_REPLACE, 'label' => 'Replace'];
+                    break;
+                case self::STRATEGY_MERGE:
+                    $availableStrategies[] = ['value' => self::STRATEGY_MERGE, 'label' => 'Merge'];
+                    break;
+                case self::STRATEGY_SUBTRACT:
+                    $availableStrategies[] = ['value' => self::STRATEGY_SUBTRACT, 'label' => 'Subtract'];
+                    break;
+            }
         }
+
 
         return $availableStrategies;
     }
@@ -262,25 +243,12 @@ class BulkEdit extends Component
      * Retrieves the processor for a type of element. The processor determines how to do things like get the field
      * layout.
      * @param $elementType
-     * @return AbstractElementTypeProcessor
+     * @return string processor classname
      * @throws \ReflectionException
      */
-    public function getElementTypeProcessor($elementType)
+    public function getElementTypeProcessor($elementType): ?string
     {
-        $processors = [
-            EntryProcessor::class,
-            UserProcessor::class,
-            CategoryProcessor::class,
-            AssetProcessor::class,
-        ];
-
-        if (Craft::$app->plugins->isPluginInstalled('commerce')) {
-            $processors[] = ProductProcessor::class;
-        }
-
-        $event = new RegisterComponentTypesEvent();
-        $event->types = &$processors;
-        $this->trigger(self::EVENT_REGISTER_ELEMENT_PROCESSORS, $event);
+        $processors = $this->getElementTypeProcessors();
 
         $processorsKeyedByClass = [];
         foreach ($processors as $processor) {
@@ -298,16 +266,99 @@ class BulkEdit extends Component
     }
 
     /**
+     * Gets an array of all element type processors
+     * @return array
+     */
+    public function getElementTypeProcessors(): array
+    {
+        if (self::$_ELEMENT_TYPE_PROCESSORS !== null) {
+            return self::$_ELEMENT_TYPE_PROCESSORS;
+        }
+
+        $processors = [
+            EntryProcessor::class,
+            UserProcessor::class,
+            CategoryProcessor::class,
+            AssetProcessor::class,
+        ];
+
+        if (Craft::$app->plugins->isPluginInstalled('commerce')) {
+            $processors[] = ProductProcessor::class;
+        }
+
+        $event = new RegisterComponentTypesEvent();
+        $event->types = &$processors;
+        $this->trigger(self::EVENT_REGISTER_ELEMENT_PROCESSORS, $event);
+        self::$_ELEMENT_TYPE_PROCESSORS = $processors;
+        return $processors;
+    }
+
+    /**
+     * Retrieves the processor for a type of field
+     * @param FieldInterface $fieldType
+     * @param $strategy
+     * @return AbstractFieldProcessor|null field processor class
+     * @throws \ReflectionException
+     */
+    public function getFieldProcessor(FieldInterface $fieldType, $strategy = null): ?AbstractFieldProcessor
+    {
+        $processors = $this->getFieldProcessors();
+
+        foreach ($processors as $processor) {
+            $reflection = new \ReflectionClass($processor);
+            /** @var AbstractFieldProcessor $instance */
+            $instance = $reflection->newInstanceWithoutConstructor();
+
+            if ($strategy && !in_array($strategy, $instance::getSupportedStrategies(), true)) {
+                continue;
+            }
+
+            $fields = $instance::getSupportedFields();
+            foreach ($fields as $field) {
+                if (!$fieldType instanceof $field) {
+                    continue;
+                }
+
+                return $instance;
+            }
+
+        }
+    }
+
+    /**
+     * Gets an array of all field processors
+     * @return array
+     */
+    public function getFieldProcessors(): array
+    {
+        if (self::$_FIELD_TYPE_PROCESSORS !== null) {
+            return self::$_FIELD_TYPE_PROCESSORS;
+        }
+        $processors = [
+            PlainTextProcessor::class,
+            RelationFieldProcessor::class
+        ];
+
+        $event = new RegisterComponentTypesEvent();
+        $event->types = &$processors;
+        $this->trigger(self::EVENT_REGISTER_FIELD_PROCESSORS, $event);
+
+        self::$_FIELD_TYPE_PROCESSORS = $processors;
+        return $processors;
+    }
+
+    /**
      * Saves an element context
      * @param $elementType
      * @param $siteId
      * @param $elementIds
      * @param $fieldIds
      * @param $keyedFieldValues
-     * @throws \yii\db\Exception
+     * @param $fieldStrategies
      * @throws \ReflectionException
+     * @throws \yii\db\Exception
      */
-    public function saveContext($elementType, $siteId, $elementIds, $fieldIds, $keyedFieldValues)
+    public function saveContext($elementType, $siteId, $elementIds, $fieldIds, $keyedFieldValues, $fieldStrategies): void
     {
         /** @var AbstractElementTypeProcessor $processor */
         $processor = $this->getElementTypeProcessor($elementType);
@@ -327,7 +378,7 @@ class BulkEdit extends Component
         $rows = [];
         foreach ($elementIds as $elementId) {
             foreach ($fieldIds as $fieldId) {
-                $strategy = $fieldStrategies[$fieldId] ?? 'replace';
+                $strategy = $fieldStrategies[$fieldId] ?? self::STRATEGY_REPLACE;
 
                 $rows[] = [
                     'pending',
