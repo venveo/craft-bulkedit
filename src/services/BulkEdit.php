@@ -24,6 +24,7 @@ use venveo\bulkedit\elements\processors\CategoryProcessor;
 use venveo\bulkedit\elements\processors\EntryProcessor;
 use venveo\bulkedit\elements\processors\ProductProcessor;
 use venveo\bulkedit\elements\processors\UserProcessor;
+use venveo\bulkedit\fields\processors\NumberFieldProcessor;
 use venveo\bulkedit\fields\processors\PlainTextProcessor;
 use venveo\bulkedit\fields\processors\RelationFieldProcessor;
 use venveo\bulkedit\models\FieldWrapper;
@@ -41,6 +42,9 @@ class BulkEdit extends Component
     public const STRATEGY_REPLACE = 'replace';
     public const STRATEGY_MERGE = 'merge';
     public const STRATEGY_SUBTRACT = 'subtract';
+    public const STRATEGY_ADD = 'add';
+    public const STRATEGY_MULTIPLY = 'multiply';
+    public const STRATEGY_DIVIDE = 'divide';
 
     public const EVENT_REGISTER_ELEMENT_PROCESSORS = 'registerElementProcessors';
     public const EVENT_REGISTER_FIELD_PROCESSORS = 'registerFieldProcessors';
@@ -232,6 +236,15 @@ class BulkEdit extends Component
                 case self::STRATEGY_SUBTRACT:
                     $availableStrategies[] = ['value' => self::STRATEGY_SUBTRACT, 'label' => 'Subtract'];
                     break;
+                case self::STRATEGY_ADD:
+                    $availableStrategies[] = ['value' => self::STRATEGY_ADD, 'label' => 'Add'];
+                    break;
+                case self::STRATEGY_DIVIDE:
+                    $availableStrategies[] = ['value' => self::STRATEGY_DIVIDE, 'label' => 'Divide'];
+                    break;
+                case self::STRATEGY_MULTIPLY:
+                    $availableStrategies[] = ['value' => self::STRATEGY_MULTIPLY, 'label' => 'Multiply'];
+                    break;
             }
         }
 
@@ -336,7 +349,8 @@ class BulkEdit extends Component
         }
         $processors = [
             PlainTextProcessor::class,
-            RelationFieldProcessor::class
+            RelationFieldProcessor::class,
+            NumberFieldProcessor::class
         ];
 
         $event = new RegisterComponentTypesEvent();

@@ -25,6 +25,21 @@ abstract class AbstractFieldProcessor implements FieldProcessorInterface
         throw new \RuntimeException('Subtraction not implemented for this field type');
     }
 
+    public static function performAddition(Element $element, Field $field, $value): void
+    {
+        throw new \RuntimeException('Addition not implemented for this field type');
+    }
+
+    public static function performDivision(Element $element, Field $field, $value): void
+    {
+        throw new \RuntimeException('Division not implemented for this field type');
+    }
+
+    public static function performMultiplication(Element $element, Field $field, $value): void
+    {
+        throw new \RuntimeException('Multiplication not implemented for this field type');
+    }
+
     /**
      * @param FieldInterface $field
      * @return bool
@@ -50,6 +65,15 @@ abstract class AbstractFieldProcessor implements FieldProcessorInterface
                 break;
             case BulkEdit::STRATEGY_SUBTRACT:
                 static::performSubtraction($element, $field, $newValue);
+                break;
+            case BulkEdit::STRATEGY_ADD:
+                static::performAddition($element, $field, $newValue);
+                break;
+            case BulkEdit::STRATEGY_MULTIPLY:
+                static::performMultiplication($element, $field, $newValue);
+                break;
+            case BulkEdit::STRATEGY_DIVIDE:
+                static::performDivision($element, $field, $newValue);
                 break;
         }
     }

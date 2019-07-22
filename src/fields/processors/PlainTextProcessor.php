@@ -31,7 +31,6 @@ class PlainTextProcessor extends AbstractFieldProcessor
     {
         $fields = [
             PlainText::class,
-            Number::class,
             Color::class,
             Checkboxes::class,
             Dropdown::class,
