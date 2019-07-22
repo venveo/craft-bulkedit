@@ -1,5 +1,9 @@
 # Bulk Edit Changelog
 
+## 1.1.0.1 - 2019-07-21
+### Fixed
+- Fixed an issue with bulkEdit component not being set
+
 ## 1.1.0 - 2019-07-21
 ### Added
 - Strategy selection: replace, merge, or subtract
