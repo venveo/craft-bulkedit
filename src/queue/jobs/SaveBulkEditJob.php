@@ -61,7 +61,7 @@ class SaveBulkEditJob extends BaseJob
                     throw new \Exception('Unexpected element type encountered!');
                 }
 
-                $history = Plugin::$plugin->bulkEdit->getPendingHistoryForElement($this->context, $element->id)->all();
+                $history = Plugin::$plugin->bulkEdit->getPendingHistoryFromContext($this->context, $element->id)->all();
                 try {
                     Craft::info('Starting processing bulk edit job', __METHOD__);
                     Plugin::$plugin->bulkEdit->processHistoryItemsForElement($history, $element);

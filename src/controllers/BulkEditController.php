@@ -203,7 +203,7 @@ class BulkEditController extends Controller
         $elementIds = explode(',', $elementIds);
 
         try {
-            Plugin::$plugin->bulkEdit->saveContext($elementType, $siteId, $elementIds, $fieldIds, $keyedFieldValues);
+            Plugin::$plugin->bulkEdit->saveContext($elementType, $siteId, $elementIds, $fieldIds, $keyedFieldValues, $fieldStrategies);
 
             return $this->asJson([
                 'success' => true

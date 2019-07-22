@@ -1,5 +1,18 @@
 # Bulk Edit Changelog
 
+## 1.1.1 - 2019-07-22
+### Fixed
+- Fixed potential issues with merge strategies defaulting to replace
+
+### Changed
+- Abstracted field handling
+
+### Added
+- `EVENT_REGISTER_FIELD_PROCESSORS`
+
+### Removed
+- `EVENT_REGISTER_SUPPORTED_FIELDS` use `EVENT_REGISTER_FIELD_PROCESSORS` instead
+
 ## 1.1.0.1 - 2019-07-21
 ### Fixed
 - Fixed an issue with bulkEdit component not being set
