@@ -2,7 +2,7 @@
 
 ## Unreleased
 ### Added
-- Add support for new strategies: ADD, SUBTRACT, MULTIPLE, DIVIDE
+- Add support for new strategies: ADD, MULTIPLY, DIVIDE
 - Number fields now have the following strategies: REPLACE, ADD, SUBTRACT, MULTIPLY, DIVIDE
 
 ## 1.1.1 - 2019-07-22
