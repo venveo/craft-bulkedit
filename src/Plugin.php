@@ -52,6 +52,8 @@ class Plugin extends BasePlugin
         parent::init();
         self::$plugin = $this;
 
+        $this->setComponents(['bulkEdit' => BulkEdit::class]);
+
         Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS, function (RegisterUserPermissionsEvent $event) {
             $permissions = [];
             $permissions[self::PERMISSION_BULKEDIT_ENTRIES] = [
