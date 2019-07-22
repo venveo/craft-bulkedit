@@ -59,10 +59,4 @@ class PlainTextProcessor extends AbstractFieldProcessor
     {
         return [BulkEdit::STRATEGY_REPLACE];
     }
-
-
-    public static function performReplacement(Element $element, Field $field, $value): void
-    {
-
-    }
 }
