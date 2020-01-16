@@ -33,13 +33,6 @@ class Install extends Migration
     /*
      * @inheritdoc
      */
-    public function safeDown()
-    {
-        $this->driver = Craft::$app->getConfig()->getDb()->driver;
-        $this->removeTables();
-
-        return true;
-    }
 
     /**
      * Creates all necessary tables for this plugin
@@ -91,7 +84,6 @@ class Install extends Migration
         return $tablesCreated;
     }
 
-
     protected function createIndexes()
     {
         $this->createIndex(null, '{{%bulkedit_editcontext}}', ['ownerId'], false);
@@ -111,6 +103,14 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%bulkedit_history}}', ['elementId'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%bulkedit_history}}', ['fieldId'], '{{%fields}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%bulkedit_history}}', ['siteId'], '{{%sites}}', ['id'], 'CASCADE', null);
+    }
+
+    public function safeDown()
+    {
+        $this->driver = Craft::$app->getConfig()->getDb()->driver;
+        $this->removeTables();
+
+        return true;
     }
 
     /**

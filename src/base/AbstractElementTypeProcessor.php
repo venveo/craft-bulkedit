@@ -1,6 +1,8 @@
 <?php
+
 namespace venveo\bulkedit\base;
 
-abstract class AbstractElementTypeProcessor implements ElementTypeProcessorInterface {
+abstract class AbstractElementTypeProcessor implements ElementTypeProcessorInterface
+{
 
 }

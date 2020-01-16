@@ -5,6 +5,12 @@
 - Add support for new strategies: ADD, MULTIPLY, DIVIDE
 - Number fields now have the following strategies: REPLACE, ADD, SUBTRACT, MULTIPLY, DIVIDE
 
+### Changed
+- Changed FieldProcessorInterface to remove void declaration
+
+### Fixed
+- Improved compatibility with older versions of php
+
 ## 1.1.1 - 2019-07-22
 ### Fixed
 - Fixed potential issues with merge strategies defaulting to replace

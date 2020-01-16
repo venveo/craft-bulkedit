@@ -4,7 +4,6 @@ namespace venveo\bulkedit\fields\processors;
 
 use craft\base\Element;
 use craft\base\Field;
-use craft\base\FieldInterface;
 use craft\fields\BaseRelationField;
 use venveo\bulkedit\base\AbstractFieldProcessor;
 use venveo\bulkedit\services\BulkEdit;
@@ -34,7 +33,7 @@ class RelationFieldProcessor extends AbstractFieldProcessor
         return [BulkEdit::STRATEGY_REPLACE, BulkEdit::STRATEGY_SUBTRACT, BulkEdit::STRATEGY_MERGE];
     }
 
-    public static function performSubtraction(Element $element, Field $field, $value): void
+    public static function performSubtraction(Element $element, Field $field, $value)
     {
         $fieldHandle = $field->handle;
         $originalValue = $element->getFieldValue($fieldHandle);
@@ -43,7 +42,7 @@ class RelationFieldProcessor extends AbstractFieldProcessor
         $element->setFieldValue($fieldHandle, $ids);
     }
 
-    public static function performMerge(Element $element, Field $field, $value): void
+    public static function performMerge(Element $element, Field $field, $value)
     {
         $originalValue = $element->getFieldValue($field->handle);
         $fieldHandle = $field->handle;

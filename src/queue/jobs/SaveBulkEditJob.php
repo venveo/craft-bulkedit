@@ -13,6 +13,7 @@ namespace venveo\bulkedit\queue\jobs;
 use Craft;
 use craft\base\ElementInterface;
 use craft\queue\BaseJob;
+use Throwable;
 use venveo\bulkedit\Plugin;
 use venveo\bulkedit\records\EditContext;
 use venveo\bulkedit\records\History;
@@ -38,7 +39,7 @@ class SaveBulkEditJob extends BaseJob
     /**
      * Saves bulk edited elements
      * @param null $queue
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function execute($queue = null)
     {
@@ -47,7 +48,8 @@ class SaveBulkEditJob extends BaseJob
         try {
             $currentRow = 0;
             /**
-             * @var History $elementHistory */
+             * @var History $elementHistory
+             */
             foreach ($elementHistories->each() as $elementHistory) {
                 $elementId = $elementHistory->elementId;
                 /** @var ElementInterface $element */
@@ -68,7 +70,7 @@ class SaveBulkEditJob extends BaseJob
                 } catch (\Exception $e) {
                     Craft::error('Could not save element in bulk edit job... ' . $e->getMessage(), __METHOD__);
                     throw new Exception('Couldn’t save element ' . $element->id . ' (' . get_class($element) . ')');
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     throw $e;
                 }
                 if (($currentRow + 1) === (int)$totalSteps) {

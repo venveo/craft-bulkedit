@@ -5,41 +5,11 @@ namespace venveo\bulkedit\base;
 use craft\base\Element;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use RuntimeException;
 use venveo\bulkedit\services\BulkEdit;
 
 abstract class AbstractFieldProcessor implements FieldProcessorInterface
 {
-    public static function performMerge(Element $element, Field $field, $value): void
-    {
-        throw new \RuntimeException('Merge not implemented for this field type');
-    }
-
-    public static function performReplacement(Element $element, Field $field, $value): void
-    {
-        $fieldHandle = $field->handle;
-        $element->setFieldValue($fieldHandle, $value);
-    }
-
-    public static function performSubtraction(Element $element, Field $field, $value): void
-    {
-        throw new \RuntimeException('Subtraction not implemented for this field type');
-    }
-
-    public static function performAddition(Element $element, Field $field, $value): void
-    {
-        throw new \RuntimeException('Addition not implemented for this field type');
-    }
-
-    public static function performDivision(Element $element, Field $field, $value): void
-    {
-        throw new \RuntimeException('Division not implemented for this field type');
-    }
-
-    public static function performMultiplication(Element $element, Field $field, $value): void
-    {
-        throw new \RuntimeException('Multiplication not implemented for this field type');
-    }
-
     /**
      * @param FieldInterface $field
      * @return bool
@@ -54,7 +24,7 @@ abstract class AbstractFieldProcessor implements FieldProcessorInterface
         return false;
     }
 
-    public static function processElementField(Element $element, Field $field, $strategy, $newValue): void
+    public static function processElementField(Element $element, Field $field, $strategy, $newValue)
     {
         switch ($strategy) {
             case BulkEdit::STRATEGY_REPLACE:
@@ -76,5 +46,36 @@ abstract class AbstractFieldProcessor implements FieldProcessorInterface
                 static::performDivision($element, $field, $newValue);
                 break;
         }
+    }
+
+    public static function performReplacement(Element $element, Field $field, $value)
+    {
+        $fieldHandle = $field->handle;
+        $element->setFieldValue($fieldHandle, $value);
+    }
+
+    public static function performMerge(Element $element, Field $field, $value)
+    {
+        throw new RuntimeException('Merge not implemented for this field type');
+    }
+
+    public static function performSubtraction(Element $element, Field $field, $value)
+    {
+        throw new RuntimeException('Subtraction not implemented for this field type');
+    }
+
+    public static function performAddition(Element $element, Field $field, $value)
+    {
+        throw new RuntimeException('Addition not implemented for this field type');
+    }
+
+    public static function performMultiplication(Element $element, Field $field, $value)
+    {
+        throw new RuntimeException('Multiplication not implemented for this field type');
+    }
+
+    public static function performDivision(Element $element, Field $field, $value)
+    {
+        throw new RuntimeException('Division not implemented for this field type');
     }
 }

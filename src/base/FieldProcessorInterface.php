@@ -19,9 +19,9 @@ interface FieldProcessorInterface
      */
     public static function getSupportedStrategies(): array;
 
-    public static function performReplacement(Element $element, Field $field, $value): void;
+    public static function performReplacement(Element $element, Field $field, $value);
 
-    public static function performSubtraction(Element $element, Field $field, $value): void;
+    public static function performSubtraction(Element $element, Field $field, $value);
 
-    public static function performMerge(Element $element, Field $field, $value): void;
+    public static function performMerge(Element $element, Field $field, $value);
 }
