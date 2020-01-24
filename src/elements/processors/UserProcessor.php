@@ -2,6 +2,7 @@
 
 namespace venveo\bulkedit\elements\processors;
 
+use Craft;
 use craft\elements\User;
 use craft\records\FieldLayout;
 use craft\services\Users;
@@ -18,7 +19,7 @@ class UserProcessor extends AbstractElementTypeProcessor
      */
     public static function getLayoutsFromElementIds($elementIds): array
     {
-        $projectConfig = \Craft::$app->projectConfig;
+        $projectConfig = Craft::$app->projectConfig;
         $fieldLayouts = $projectConfig->get(Users::CONFIG_USERLAYOUT_KEY);
         $fieldLayoutsUIDs = array_keys($fieldLayouts);
         $layouts = FieldLayout::find()

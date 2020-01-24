@@ -31,7 +31,7 @@ class NumberFieldProcessor extends AbstractFieldProcessor
         return [BulkEdit::STRATEGY_REPLACE, BulkEdit::STRATEGY_SUBTRACT, BulkEdit::STRATEGY_ADD, BulkEdit::STRATEGY_MULTIPLY, BulkEdit::STRATEGY_DIVIDE];
     }
 
-    public static function performAddition(Element $element, Field $field, $value): void
+    public static function performAddition(Element $element, Field $field, $value)
     {
         $fieldHandle = $field->handle;
         $originalValue = (int)$element->getFieldValue($fieldHandle);
@@ -39,7 +39,7 @@ class NumberFieldProcessor extends AbstractFieldProcessor
         $element->setFieldValue($fieldHandle, $originalValue + (int)$value);
     }
 
-    public static function performSubtraction(Element $element, Field $field, $value): void
+    public static function performSubtraction(Element $element, Field $field, $value)
     {
         $fieldHandle = $field->handle;
         $originalValue = (int)$element->getFieldValue($fieldHandle);
@@ -48,7 +48,7 @@ class NumberFieldProcessor extends AbstractFieldProcessor
         $element->setFieldValue($fieldHandle, $originalValue - (int)$value);
     }
 
-    public static function performMultiplication(Element $element, Field $field, $value): void
+    public static function performMultiplication(Element $element, Field $field, $value)
     {
         $fieldHandle = $field->handle;
         $originalValue = (int)$element->getFieldValue($fieldHandle);
@@ -57,7 +57,7 @@ class NumberFieldProcessor extends AbstractFieldProcessor
         $element->setFieldValue($fieldHandle, $originalValue * (int)$value);
     }
 
-    public static function performDivision(Element $element, Field $field, $value): void
+    public static function performDivision(Element $element, Field $field, $value)
     {
         $fieldHandle = $field->handle;
         $originalValue = (int)$element->getFieldValue($fieldHandle);

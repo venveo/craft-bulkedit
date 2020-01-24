@@ -2,8 +2,7 @@
 
 namespace venveo\bulkedit\fields\processors;
 
-use craft\base\Element;
-use craft\base\Field;
+use Craft;
 use craft\fields\Checkboxes;
 use craft\fields\Color;
 use craft\fields\Date;
@@ -11,12 +10,11 @@ use craft\fields\Dropdown;
 use craft\fields\Email;
 use craft\fields\Lightswitch;
 use craft\fields\MultiSelect;
-use craft\fields\Number;
 use craft\fields\PlainText;
 use craft\fields\RadioButtons;
 use craft\fields\Table;
-use craft\redactor\Field as RedactorField;
 use craft\fields\Url;
+use craft\redactor\Field as RedactorField;
 use venveo\bulkedit\base\AbstractFieldProcessor;
 use venveo\bulkedit\services\BulkEdit;
 
@@ -43,7 +41,7 @@ class PlainTextProcessor extends AbstractFieldProcessor
             MultiSelect::class
         ];
 
-        if (\Craft::$app->plugins->isPluginInstalled('redactor')) {
+        if (Craft::$app->plugins->isPluginInstalled('redactor')) {
             $fields[] = RedactorField::class;
         }
 

@@ -1,9 +1,19 @@
 # Bulk Edit Changelog
 
-## Unreleased
+## 2.0.0 - 2020-01-24
+{warning} The FieldProcessorInterface has slightly changed to better
+support old versions of PHP. If you wrote your own FieldProcessor,
+ensure it has been updates prior to updating to 2.0.0
+
 ### Added
 - Add support for new strategies: ADD, MULTIPLY, DIVIDE
 - Number fields now have the following strategies: REPLACE, ADD, SUBTRACT, MULTIPLY, DIVIDE
+
+### Changed
+- Changed FieldProcessorInterface to remove void declaration
+
+### Fixed
+- Improved compatibility with older versions of php
 
 ## 1.1.1 - 2019-07-22
 ### Fixed

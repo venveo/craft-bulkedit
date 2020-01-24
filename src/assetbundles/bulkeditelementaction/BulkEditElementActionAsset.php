@@ -1,7 +1,7 @@
 <?php
+
 namespace venveo\bulkedit\assetbundles\bulkeditelementaction;
 
-use Craft;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 

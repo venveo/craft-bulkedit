@@ -12,8 +12,8 @@ use yii\db\ActiveQueryInterface;
 /**
  * @property integer fieldId
  * @property string status
- * @property \yii\db\ActiveQueryInterface $element
- * @property \yii\db\ActiveQueryInterface $context
+ * @property ActiveQueryInterface $element
+ * @property ActiveQueryInterface $context
  * @property Field $field
  * @property Site $site
  * @property integer id

@@ -12,9 +12,9 @@ use yii\db\ActiveQueryInterface;
  * @property int|null ownerId
  * @property integer siteId
  * @property string elementIds
- * @property \yii\db\ActiveQueryInterface $site
+ * @property ActiveQueryInterface $site
  * @property User $owner
- * @property \yii\db\ActiveQueryInterface $historyItems
+ * @property ActiveQueryInterface $historyItems
  * @property string fieldIds
  * @property string elementType
  * @property integer id

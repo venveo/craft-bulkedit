@@ -11,14 +11,17 @@
 namespace venveo\bulkedit\controllers;
 
 use Craft;
+use craft\errors\SiteNotFoundException;
+use craft\helpers\ElementHelper;
 use craft\records\Element;
 use craft\records\Field;
 use craft\web\Controller;
 use craft\web\Response;
+use Exception;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use venveo\bulkedit\Plugin;
-use venveo\bulkedit\queue\jobs\SaveBulkEditJob;
-use venveo\bulkedit\records\EditContext;
-use venveo\bulkedit\records\History;
 use venveo\bulkedit\services\BulkEdit as BulkEditService;
 use yii\web\BadRequestHttpException;
 
@@ -34,27 +37,54 @@ class BulkEditController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException if not a valid request
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws SiteNotFoundException
      */
     public function actionGetFields(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $site = Craft::$app->getSites()->getCurrentSite();
         $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
-        $elementType = Craft::$app->getRequest()->getRequiredParam('elementType');
         $requestId = Craft::$app->getRequest()->getRequiredParam('requestId');
+        $viewParams = Craft::$app->getRequest()->getRequiredParam('viewParams');
+
+        $elementType = $viewParams['elementType'];
+        $siteId = $viewParams['criteria']['siteId'];
+        $site = Craft::$app->sites->getSiteById($siteId);
+
+//        $sourceKey = $viewParams['source'];
+//        $criteria = $viewParams['criteria'];
+//
+//        $query = $elementType::find();
+//        $source = ElementHelper::findSource($elementType, $sourceKey, 'index');
+//
+//
+//        if ($source === null) {
+//            throw new BadRequestHttpException('Invalid source key: ' . $sourceKey);
+//        }
+//
+//        // Does the source specify any criteria attributes?
+//        if (isset($source['criteria'])) {
+//            Craft::configure($query, $source['criteria']);
+//        }
+//
+//        // Override with the request's params
+//        if ($criteria !== null) {
+//            if (isset($criteria['trashed'])) {
+//                $criteria['trashed'] = (bool)$criteria['trashed'];
+//            }
+//            Craft::configure($query, $criteria);
+//        }
 
         /** @var BulkEditService $service */
         $service = Plugin::$plugin->bulkEdit;
         $fields = $service->getFieldsForElementIds($elementIds, $elementType);
 
 
-        $view = \Craft::$app->getView();
+        $view = Craft::$app->getView();
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_fields', [
             'fieldWrappers' => $fields,
             'elementType' => $elementType,
@@ -79,9 +109,9 @@ class BulkEditController extends Controller
     /**
      * @return \yii\web\Response
      * @throws BadRequestHttpException
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     public function actionGetEditScreen()
     {
@@ -95,6 +125,8 @@ class BulkEditController extends Controller
         $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
         $fields = Craft::$app->getRequest()->getRequiredParam('fields');
 
+        $viewParams = Craft::$app->getRequest()->getParam('viewParams');
+
         // Pull out the enabled fields
         $enabledFields = [];
         foreach ($fields as $fieldId => $field) {
@@ -106,35 +138,35 @@ class BulkEditController extends Controller
 
         $site = Craft::$app->getSites()->getSiteById($siteId);
         if (!$site) {
-            throw new \Exception('Site does not exist');
+            throw new Exception('Site does not exist');
         }
 
 
         $fields = Field::findAll(array_keys($enabledFields));
         if (count($fields) !== count($enabledFields)) {
-            throw new \Exception('Could not find all fields requested');
+            throw new Exception('Could not find all fields requested');
         }
 
         $elementIds = explode(',', $elementIds);
         $elements = Element::findAll($elementIds);
         if (count($elements) !== count($elementIds)) {
-            throw new \Exception('Could not find all elements requested');
+            throw new Exception('Could not find all elements requested');
         }
 
         try {
             $fieldModels = [];
             /** @var Field $field */
             foreach ($fields as $field) {
-                $fieldModel = \Craft::$app->fields->getFieldById($field->id);
+                $fieldModel = Craft::$app->fields->getFieldById($field->id);
                 if ($fieldModel && Plugin::$plugin->bulkEdit->isFieldSupported($fieldModel)) {
                     $fieldModels[] = $fieldModel;
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw $e;
         }
 
-        $view = \Craft::$app->getView();
+        $view = Craft::$app->getView();
 
         // We've gotta register any asset bundles - this won't actually be rendered
         foreach ($fieldModels as $fieldModel) {
@@ -195,7 +227,7 @@ class BulkEditController extends Controller
                 }
             }
             if (!isset($fieldId)) {
-                throw new \Exception('Failed to locate field');
+                throw new Exception('Failed to locate field');
             }
             $keyedFieldValues[$fieldId] = $value;
         }
@@ -208,7 +240,7 @@ class BulkEditController extends Controller
             return $this->asJson([
                 'success' => true
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->asErrorJson('Failed to save context');
         }
     }
