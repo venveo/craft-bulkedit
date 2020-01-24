@@ -12,6 +12,7 @@ namespace venveo\bulkedit\controllers;
 
 use Craft;
 use craft\errors\SiteNotFoundException;
+use craft\helpers\ElementHelper;
 use craft\records\Element;
 use craft\records\Field;
 use craft\web\Controller;
@@ -46,11 +47,37 @@ class BulkEditController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $site = Craft::$app->getSites()->getCurrentSite();
         $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
         $requestId = Craft::$app->getRequest()->getRequiredParam('requestId');
         $viewParams = Craft::$app->getRequest()->getRequiredParam('viewParams');
+
         $elementType = $viewParams['elementType'];
+        $siteId = $viewParams['criteria']['siteId'];
+        $site = Craft::$app->sites->getSiteById($siteId);
+
+//        $sourceKey = $viewParams['source'];
+//        $criteria = $viewParams['criteria'];
+//
+//        $query = $elementType::find();
+//        $source = ElementHelper::findSource($elementType, $sourceKey, 'index');
+//
+//
+//        if ($source === null) {
+//            throw new BadRequestHttpException('Invalid source key: ' . $sourceKey);
+//        }
+//
+//        // Does the source specify any criteria attributes?
+//        if (isset($source['criteria'])) {
+//            Craft::configure($query, $source['criteria']);
+//        }
+//
+//        // Override with the request's params
+//        if ($criteria !== null) {
+//            if (isset($criteria['trashed'])) {
+//                $criteria['trashed'] = (bool)$criteria['trashed'];
+//            }
+//            Craft::configure($query, $criteria);
+//        }
 
         /** @var BulkEditService $service */
         $service = Plugin::$plugin->bulkEdit;
