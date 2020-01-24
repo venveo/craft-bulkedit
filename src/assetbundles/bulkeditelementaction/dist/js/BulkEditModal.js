@@ -94,11 +94,12 @@ Craft.BulkEditModal = Garnish.Modal.extend(
             this._initSpinner();
             this.requestId++;
 
+            var viewParams = Craft.elementIndex.getViewParams();
             Craft.postActionRequest('venveo-bulk-edit/bulk-edit/get-fields',
                 {
                     elementIds: elementIds,
                     requestId: this.requestId,
-                    elementType: Craft.elementIndex.elementType
+                    viewParams: viewParams
                 }, function(response, textStatus) {
                 if (textStatus === 'success') {
                     if (response.success) {
@@ -136,6 +137,7 @@ Craft.BulkEditModal = Garnish.Modal.extend(
 
         _bindEventHandlersForFieldSelect: function() {
             this.$container.find('#field-edit-cancel').on('click', this.hide.bind(this));
+            this.$container.find('#select-all-elements').on('click', this._handleSelectAllElementsClicked.bind(this));
             this.$container.find('#fields-table .lightswitch').on('change', this._handleFieldSelect.bind(this));
             this.$container.find('.submit').on('click', this._handleFieldSelectSubmit.bind(this));
         },
@@ -162,6 +164,11 @@ Craft.BulkEditModal = Garnish.Modal.extend(
                 Craft.cp.trackJobProgress(false, true);
                 Craft.cp.runQueue();
             }.bind(this));
+        },
+
+        _handleSelectAllElementsClicked: function(e) {
+            e.preventDefault();
+            this._initSpinner();
         },
 
         _handleFieldSelectSubmit: function(e) {
