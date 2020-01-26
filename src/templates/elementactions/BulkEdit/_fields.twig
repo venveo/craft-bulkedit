@@ -1,91 +1,140 @@
 {% import '_includes/forms' as forms %}
 
 <div class="bulkedit field-edit-modal">
-  <h2>Select Fields</h2>
-  <p>Editing <strong>{{ elementIds|length }}</strong> elements on site
-    <strong>{{ site.name }} ({{ site.language }})</strong></p>
-  {% if fieldWrappers|length %}
+    <h2>{{ "Select Fields"|t('venveo-bulk-edit') }}</h2>
+    <p>Editing <strong>{{ elementIds|length }}</strong> elements on site
+        <strong>{{ site.name }} ({{ site.language }})</strong></p>
+    {% if fieldWrappers|length or attributeWrappers|length %}
     <form action="" method="post" accept-charset="UTF-8">
-      {{ csrfInput() }}
-      {{ actionInput('bulkedit/bulk-edit/edit') }}
-      <input type="hidden" name="elementIds" value="{{ elementIds|join(',') }}">
-      <input type="hidden" name="siteId" value="{{ site.id }}">
-      <input type="hidden" name="elementType" value="{{ elementType }}">
-      <table class="data fullwidth" id="fields-table">
-        <thead>
-        <th scope="col" class="col-header">
+        {{ csrfInput() }}
+        {{ actionInput('bulkedit/bulk-edit/edit') }}
+        <input type="hidden" name="elementIds" value="{{ elementIds|join(',') }}">
+        <input type="hidden" name="siteId" value="{{ site.id }}">
+        <input type="hidden" name="elementType" value="{{ elementType }}">
+
+        {% if fieldWrappers|length %}
+            <table class="data fullwidth" id="fields-table">
+                <thead>
+                <th scope="col" class="col-header">
         <span class="heading-text">
             Field Name
         </span>
-        </th>
-        <th scope="col" class="col-header">
+                </th>
+                <th scope="col" class="col-header">
         <span class="heading-text">
             Field Handle
         </span>
-        </th>
-        <th scope="col" class="col-header">
+                </th>
+                <th scope="col" class="col-header">
         <span class="heading-text">
             Edit
         </span>
-        </th>
-        <th scope="col" class="col-header">
+                </th>
+                <th scope="col" class="col-header">
         <span class="heading-text">
             Strategy
         </span>
-        </th>
-        </thead>
-        {# fieldWrapper  #}
-        {% for fieldWrapper in fieldWrappers %}
-          {% set field = fieldWrapper.field %}
-          {% set fieldUnsupported = false %}
-          {% if not bulkedit.isFieldSupported(field) %}
-            {% set fieldUnsupported = true %}
-          {% endif %}
-          <tr>
-            <td>
+                </th>
+                </thead>
+                {# fieldWrapper  #}
+                {% for fieldWrapper in fieldWrappers %}
+                    {% set field = fieldWrapper.field %}
+                    {% set fieldUnsupported = false %}
+                    {% if not bulkedit.isFieldSupported(field) %}
+                        {% set fieldUnsupported = true %}
+                    {% endif %}
+                    <tr>
+                        <td>
             <span>
-                {{ field.name | t('site') }} {% if field.instructions %}<span class="info">{{ field.instructions | t('site') | e | md }}</span>{% endif %}
+                {{ field.name | t('site') }} {% if field.instructions %}<span
+                        class="info">{{ field.instructions | t('site') | e | md }}</span>{% endif %}
             </span>
-            </td>
-            <td><span>{{ field.handle }}</span></td>
-            <td>
+                        </td>
+                        <td><span>{{ field.handle }}</span></td>
+                        <td>
             <span>
                 {{ forms.lightswitchField({
-                  id: 'fieldEnabled-'~field.handle,
-                  name: 'fields['~field.id~'][enabled]',
-                  on: false,
-                  disabled: fieldUnsupported,
-                  value: true,
+                    id: 'fieldEnabled-'~field.handle,
+                    name: 'fields['~field.id~'][enabled]',
+                    on: false,
+                    disabled: fieldUnsupported,
+                    value: true,
                 }) }}
             </span>
-            </td>
-            <td><span>
+                        </td>
+                        <td>
+                              <span>
             {{ forms.selectField({
-              id: 'fieldStrategy-'~field.handle,
-              name: 'fields['~field.id~'][strategy]',
-              disabled: fieldUnsupported,
-              options: bulkedit.getSupportedStrategiesForField(field),
-              default: 'replace',
+                id: 'fieldStrategy-'~field.handle,
+                name: 'fields['~field.id~'][strategy]',
+                disabled: fieldUnsupported,
+                options: bulkedit.getSupportedStrategiesForField(field),
+                default: 'replace',
             }) }}
             </span>
-            </td>
-          </tr>
-        {% endfor %}
-      </table>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        {% else %}
+            <p>These elements have no associated fields.</p>
+            <div class="field-edit-modal-bar">
+                <div class="buttons right">
+                    <div class="btn" id="field-edit-cancel">Cancel</div>
+                </div>
+            </div>
+        {% endif %}
 
-      <div class="field-edit-modal-bar">
-        <div class="buttons right">
-          <div class="btn" id="field-edit-cancel">Cancel</div>
-          <input type="submit" value="Continue" disabled
-                 class="btn submit disabled"></div>
-      </div>
+        {% if attributeWrappers|length %}
+            <table class="data fullwidth" id="attributes-table">
+                <thead>
+                <th scope="col" class="col-header">
+        <span class="heading-text">
+            Attribute
+        </span>
+                </th>
+                <th scope="col" class="col-header">
+        <span class="heading-text">
+            Edit
+        </span>
+                </th>
+                <th scope="col" class="col-header">
+        <span class="heading-text">
+            Strategy
+        </span>
+                </th>
+                </thead>
+                {# fieldWrapper  #}
+                {% for attributeWrapper in attributeWrappers %}
+                    <tr>
+                        <td>
+            <span>
+                {{ attributeWrapper.name|t('site') }}
+            </span>
+                        </td>
+                        <td>
+            <span>
+                {{ forms.lightswitchField({
+                    id: 'attributeEnabled-'~attributeWrapper.handle,
+                    name: 'attributes['~attributeWrapper.handle~'][enabled]',
+                    on: false,
+                    value: true,
+                }) }}
+            </span>
+                        </td>
+                        <td>
+                            <span></span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        <div class="field-edit-modal-bar">
+            <div class="buttons right">
+                <div class="btn" id="field-edit-cancel">Cancel</div>
+                <input type="submit" value="Continue" disabled
+                       class="btn submit disabled"></div>
+        </div>
     </form>
-  {% else %}
-    <p>These elements have no associated fields.</p>
-    <div class="field-edit-modal-bar">
-      <div class="buttons right">
-        <div class="btn" id="field-edit-cancel">Cancel</div>
-      </div>
-    </div>
-  {% endif %}
 </div>

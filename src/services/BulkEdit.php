@@ -23,6 +23,7 @@ use ReflectionException;
 use Throwable;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\base\AbstractFieldProcessor;
+use venveo\bulkedit\base\ElementTypeProcessorInterface;
 use venveo\bulkedit\elements\processors\AssetProcessor;
 use venveo\bulkedit\elements\processors\CategoryProcessor;
 use venveo\bulkedit\elements\processors\EntryProcessor;
@@ -31,6 +32,7 @@ use venveo\bulkedit\elements\processors\UserProcessor;
 use venveo\bulkedit\fields\processors\NumberFieldProcessor;
 use venveo\bulkedit\fields\processors\PlainTextProcessor;
 use venveo\bulkedit\fields\processors\RelationFieldProcessor;
+use venveo\bulkedit\models\AttributeWrapper;
 use venveo\bulkedit\models\FieldWrapper;
 use venveo\bulkedit\queue\jobs\SaveBulkEditJob;
 use venveo\bulkedit\records\EditContext;
@@ -51,6 +53,7 @@ class BulkEdit extends Component
     const STRATEGY_ADD = 'add';
     const STRATEGY_MULTIPLY = 'multiply';
     const STRATEGY_DIVIDE = 'divide';
+    const STRATEGY_OBJECT_TEMPLATE = 'object_template';
 
     const EVENT_REGISTER_ELEMENT_PROCESSORS = 'registerElementProcessors';
     const EVENT_REGISTER_FIELD_PROCESSORS = 'registerFieldProcessors';
@@ -66,10 +69,12 @@ class BulkEdit extends Component
      * @param $elementType
      * @return FieldWrapper[] fields
      * @throws ReflectionException
+     * @throws Exception
      */
     public function getFieldsForElementIds($elementIds, $elementType): array
     {
         // Works for entries
+        /** @var ElementTypeProcessorInterface $processor */
         $processor = $this->getElementTypeProcessor($elementType);
         if (!$processor) {
             throw new Exception('Unable to process element type');
@@ -93,6 +98,23 @@ class BulkEdit extends Component
             }
         }
         return $fields;
+    }
+
+    public function getEditableAttributesForElementType($elementType): array {
+
+        /** @var ElementTypeProcessorInterface $processor */
+        $processor = $this->getElementTypeProcessor($elementType);
+        if (!$processor) {
+            throw new Exception('Unable to process element type');
+        }
+
+        $attributes = $processor::getEditableAttributes();
+        return array_map(function($attribute) {
+            return new AttributeWrapper([
+                'handle' => $attribute['handle'],
+                'name' => $attribute['name']
+            ]);
+        }, $attributes);
     }
 
     /**

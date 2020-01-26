@@ -27,4 +27,6 @@ interface ElementTypeProcessorInterface
      * @return string
      */
     public static function getType(): string;
+
+    public static function getEditableAttributes(): array;
 }

@@ -17,11 +17,9 @@ class RelationFieldProcessor extends AbstractFieldProcessor
      */
     public static function getSupportedFields(): array
     {
-        $fields = [
+        return [
             BaseRelationField::class
         ];
-
-        return $fields;
     }
 
     /**

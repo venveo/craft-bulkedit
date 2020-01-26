@@ -7,6 +7,7 @@ use craft\records\FieldLayout;
 use craft\web\User;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\Plugin;
+use venveo\bulkedit\services\BulkEdit;
 
 class EntryProcessor extends AbstractElementTypeProcessor
 {
@@ -48,5 +49,17 @@ class EntryProcessor extends AbstractElementTypeProcessor
     public static function hasPermission($elementIds, User $user): bool
     {
         return $user->checkPermission(Plugin::PERMISSION_BULKEDIT_ENTRIES);
+    }
+
+    public static function getEditableAttributes(): array {
+        return [
+            [
+                'name' => 'Title',
+                'handle' => 'title',
+                'strategies' => [
+                    BulkEdit::STRATEGY_REPLACE
+                ]
+            ]
+        ];
     }
 }

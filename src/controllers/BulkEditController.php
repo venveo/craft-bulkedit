@@ -82,11 +82,12 @@ class BulkEditController extends Controller
         /** @var BulkEditService $service */
         $service = Plugin::$plugin->bulkEdit;
         $fields = $service->getFieldsForElementIds($elementIds, $elementType);
-
+        $attributes = $service->getEditableAttributesForElementType($elementType);
 
         $view = Craft::$app->getView();
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_fields', [
             'fieldWrappers' => $fields,
+            'attributeWrappers' => $attributes,
             'elementType' => $elementType,
             'bulkedit' => $service,
             'elementIds' => $elementIds,
