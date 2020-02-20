@@ -1,6 +1,6 @@
 # Bulk Edit Changelog
 
-## Unreleased
+## 2.0.2 - 2020-02-20
 ### Added
 - All field types (including custom ones and Matrix) now support bulk replacement!!!
 
