@@ -1,5 +1,9 @@
 # Bulk Edit Changelog
 
+## 2.0.2.1 - 2020-02-20
+### Fixed
+- Error that can occur if trying to bulkedit fields on a soft-deleted layout
+
 ## 2.0.2 - 2020-02-20
 ### Added
 - All field types (including custom ones and Matrix) now support bulk replacement!!!
