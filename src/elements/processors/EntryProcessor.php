@@ -2,11 +2,14 @@
 
 namespace venveo\bulkedit\elements\processors;
 
+use Craft;
+use craft\base\Element;
 use craft\elements\Entry;
 use craft\records\FieldLayout;
 use craft\web\User;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\Plugin;
+use venveo\bulkedit\services\BulkEdit;
 
 class EntryProcessor extends AbstractElementTypeProcessor
 {
@@ -36,7 +39,7 @@ class EntryProcessor extends AbstractElementTypeProcessor
      */
     public static function getType(): string
     {
-        return get_class(new Entry);
+        return Entry::class;
     }
 
     /**
@@ -48,5 +51,37 @@ class EntryProcessor extends AbstractElementTypeProcessor
     public static function hasPermission($elementIds, User $user): bool
     {
         return $user->checkPermission(Plugin::PERMISSION_BULKEDIT_ENTRIES);
+    }
+
+    /**
+     * @return array
+     */
+    public static function getEditableAttributes(): array {
+//        return [
+//            [
+//                'name' => 'Title',
+//                'handle' => 'title',
+//                'strategies' => [
+//                    BulkEdit::STRATEGY_REPLACE
+//                ]
+//            ]
+//        ];
+        return [];
+    }
+
+    /**
+     * @param array $elementIds
+     * @param array $params
+     * @return Element
+     * @throws \yii\base\InvalidConfigException
+     */
+    public static function getMockElement($elementIds = [], $params = []): Element
+    {
+        $templateEntry = Craft::$app->entries->getEntryById($elementIds[0]);
+        /** @var Entry $entry */
+        $entry = Craft::createObject(self::getType(), $params);
+        $entry->typeId = $templateEntry->typeId;
+        $entry->sectionId = $templateEntry->sectionId;
+        return $entry;
     }
 }

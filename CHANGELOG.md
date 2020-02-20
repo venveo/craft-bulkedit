@@ -1,5 +1,9 @@
 # Bulk Edit Changelog
 
+## 2.0.2 - 2020-02-20
+### Added
+- All field types (including custom ones and Matrix) now support bulk replacement!!!
+
 ## 2.0.1 - 2020-02-13
 ### Fixed
 - Fixed problem with saving bulk edit jobs in Firefox

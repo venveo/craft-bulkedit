@@ -2,6 +2,7 @@
 
 namespace venveo\bulkedit\base;
 
+use craft\base\Element;
 use craft\web\User;
 
 interface ElementTypeProcessorInterface
@@ -27,4 +28,8 @@ interface ElementTypeProcessorInterface
      * @return string
      */
     public static function getType(): string;
+
+    public static function getEditableAttributes(): array;
+
+    public static function getMockElement($elementIds = [], $params = []): Element;
 }

@@ -1,4 +1,4 @@
-# Bulk Edit plugin for Craft CMS 3.2
+# Bulk Edit plugin for Craft CMS 3.2+
 
 ## Overview
 The Bulk Edit plugin adds an action to supported element index pages that allows you to edit fields on a large number of
@@ -24,10 +24,6 @@ Additionally, some fields support different strategies for the edit process. At 
 Craft to pick it up. After the queue has finished, you may reload the page and see your changes.
 
 ## Limitation & Issues
-* Custom fields and Matrix fields are not currently supported due to issues that arise when a field is rendered without 
-single entry selected.
-* Currently, there isn't a way to edit properties on elements that are not custom fields (for example, title, slug, 
-post date, etc)
 * Validation is not enforced when you're editing these fields, this means you can end up with elements with fields in 
 potentially erroneous states (for example, removing all content on a required field)
 * After the queue finishes running, make sure you refresh the page to see the updates in the element index
