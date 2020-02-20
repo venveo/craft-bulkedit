@@ -29,7 +29,6 @@ use venveo\bulkedit\elements\processors\CategoryProcessor;
 use venveo\bulkedit\elements\processors\EntryProcessor;
 use venveo\bulkedit\elements\processors\ProductProcessor;
 use venveo\bulkedit\elements\processors\UserProcessor;
-use venveo\bulkedit\fields\processors\LinkItFieldProcessor;
 use venveo\bulkedit\fields\processors\NumberFieldProcessor;
 use venveo\bulkedit\fields\processors\PlainTextProcessor;
 use venveo\bulkedit\fields\processors\RelationFieldProcessor;
@@ -294,9 +293,6 @@ class BulkEdit extends Component
             RelationFieldProcessor::class,
             NumberFieldProcessor::class
         ];
-        if (Craft::$app->plugins->isPluginInstalled('linkit')) {
-            $processors[] = LinkItFieldProcessor::class;
-        }
 
         $event = new RegisterComponentTypesEvent();
         $event->types = &$processors;

@@ -15,6 +15,7 @@ use craft\fields\RadioButtons;
 use craft\fields\Table;
 use craft\fields\Url;
 use craft\redactor\Field as RedactorField;
+use fruitstudios\linkit\fields\LinkitField;
 use venveo\bulkedit\base\AbstractFieldProcessor;
 use venveo\bulkedit\services\BulkEdit;
 
@@ -27,25 +28,7 @@ class PlainTextProcessor extends AbstractFieldProcessor
      */
     public static function getSupportedFields(): array
     {
-        $fields = [
-            PlainText::class,
-            Color::class,
-            Checkboxes::class,
-            Dropdown::class,
-            Date::class,
-            Table::class,
-            RadioButtons::class,
-            Lightswitch::class,
-            Url::class,
-            Email::class,
-            MultiSelect::class
-        ];
-
-        if (Craft::$app->plugins->isPluginInstalled('redactor')) {
-            $fields[] = RedactorField::class;
-        }
-
-        return $fields;
+        return Craft::$app->fields->getAllFieldTypes();
     }
 
     /**
