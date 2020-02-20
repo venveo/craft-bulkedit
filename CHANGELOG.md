@@ -1,5 +1,9 @@
 # Bulk Edit Changelog
 
+## 2.0.1 - 2020-02-13
+### Fixed
+- Fixed problem with saving bulk edit jobs in Firefox
+
 ## 2.0.0 - 2020-01-24
 {warning} The FieldProcessorInterface has slightly changed to better
 support old versions of PHP. If you wrote your own FieldProcessor,
