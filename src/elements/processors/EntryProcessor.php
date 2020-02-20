@@ -2,6 +2,8 @@
 
 namespace venveo\bulkedit\elements\processors;
 
+use Craft;
+use craft\base\Element;
 use craft\elements\Entry;
 use craft\records\FieldLayout;
 use craft\web\User;
@@ -51,6 +53,9 @@ class EntryProcessor extends AbstractElementTypeProcessor
         return $user->checkPermission(Plugin::PERMISSION_BULKEDIT_ENTRIES);
     }
 
+    /**
+     * @return array
+     */
     public static function getEditableAttributes(): array {
         return [
             [
@@ -61,5 +66,21 @@ class EntryProcessor extends AbstractElementTypeProcessor
                 ]
             ]
         ];
+    }
+
+    /**
+     * @param array $elementIds
+     * @param array $params
+     * @return Element
+     * @throws \yii\base\InvalidConfigException
+     */
+    public static function getMockElement($elementIds = [], $params = []): Element
+    {
+        $templateEntry = Craft::$app->entries->getEntryById($elementIds[0]);
+        /** @var Entry $entry */
+        $entry = Craft::createObject(self::getType(), $params);
+        $entry->typeId = $templateEntry->typeId;
+        $entry->sectionId = $templateEntry->sectionId;
+        return $entry;
     }
 }

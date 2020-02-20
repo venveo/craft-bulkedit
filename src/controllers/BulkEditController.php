@@ -21,6 +21,7 @@ use Exception;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use venveo\bulkedit\base\ElementTypeProcessorInterface;
 use venveo\bulkedit\Plugin;
 use venveo\bulkedit\services\BulkEdit as BulkEditService;
 use yii\web\BadRequestHttpException;
@@ -81,8 +82,8 @@ class BulkEditController extends Controller
 
         /** @var BulkEditService $service */
         $service = Plugin::$plugin->bulkEdit;
-        $fields = $service->getFieldsForElementIds($elementIds, $elementType);
-        $attributes = $service->getEditableAttributesForElementType($elementType);
+        $fields = $service->getFieldWrappers($elementIds, $elementType);
+        $attributes = $service->getAttributeWrappers($elementType);
 
         $view = Craft::$app->getView();
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_fields', [
@@ -169,10 +170,18 @@ class BulkEditController extends Controller
 
         $view = Craft::$app->getView();
 
+        /** @var ElementTypeProcessorInterface $processor */
+        $processor = Plugin::getInstance()->bulkEdit->getElementTypeProcessor($elementType);
+        $elementPlaceholder = $processor::getMockElement($elementIds, [
+            'siteId' => $siteId
+        ]);
+
         // We've gotta register any asset bundles - this won't actually be rendered
         foreach ($fieldModels as $fieldModel) {
             $view->renderPageTemplate('_includes/field', [
                 'field' => $fieldModel,
+                'static' => true,
+                'element' => $elementPlaceholder,
                 'required' => false
             ]);
         }
@@ -180,6 +189,7 @@ class BulkEditController extends Controller
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_edit', [
             'fields' => $fieldModels,
             'elementType' => $elementType,
+            'elementPlaceholder' => $elementPlaceholder,
             'elementIds' => $elementIds,
             'fieldData' => $enabledFields,
             'site' => $site

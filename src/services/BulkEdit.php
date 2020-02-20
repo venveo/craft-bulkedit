@@ -29,6 +29,7 @@ use venveo\bulkedit\elements\processors\CategoryProcessor;
 use venveo\bulkedit\elements\processors\EntryProcessor;
 use venveo\bulkedit\elements\processors\ProductProcessor;
 use venveo\bulkedit\elements\processors\UserProcessor;
+use venveo\bulkedit\fields\processors\LinkItFieldProcessor;
 use venveo\bulkedit\fields\processors\NumberFieldProcessor;
 use venveo\bulkedit\fields\processors\PlainTextProcessor;
 use venveo\bulkedit\fields\processors\RelationFieldProcessor;
@@ -71,7 +72,7 @@ class BulkEdit extends Component
      * @throws ReflectionException
      * @throws Exception
      */
-    public function getFieldsForElementIds($elementIds, $elementType): array
+    public function getFieldWrappers($elementIds, $elementType): array
     {
         // Works for entries
         /** @var ElementTypeProcessorInterface $processor */
@@ -100,7 +101,7 @@ class BulkEdit extends Component
         return $fields;
     }
 
-    public function getEditableAttributesForElementType($elementType): array {
+    public function getAttributeWrappers($elementType): array {
 
         /** @var ElementTypeProcessorInterface $processor */
         $processor = $this->getElementTypeProcessor($elementType);
@@ -191,6 +192,7 @@ class BulkEdit extends Component
      * Gets all pending bulk edit changes for a particular job
      *
      * @param EditContext $context
+     * @param null $elementId
      * @return ActiveQueryInterface
      */
     public function getPendingHistoryFromContext(EditContext $context, $elementId = null): ActiveQueryInterface
@@ -292,6 +294,9 @@ class BulkEdit extends Component
             RelationFieldProcessor::class,
             NumberFieldProcessor::class
         ];
+        if (Craft::$app->plugins->isPluginInstalled('linkit')) {
+            $processors[] = LinkItFieldProcessor::class;
+        }
 
         $event = new RegisterComponentTypesEvent();
         $event->types = &$processors;
