@@ -34,7 +34,7 @@ class UserProcessor extends AbstractElementTypeProcessor
      */
     public static function getType(): string
     {
-        return get_class(new User);
+        return User::class;
     }
 
     /**

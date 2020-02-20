@@ -2,6 +2,8 @@
 
 namespace venveo\bulkedit\elements\processors;
 
+use Craft;
+use craft\base\Element;
 use craft\elements\Asset;
 use craft\helpers\ArrayHelper;
 use craft\records\FieldLayout;
@@ -39,7 +41,7 @@ class AssetProcessor extends AbstractElementTypeProcessor
      */
     public static function getType(): string
     {
-        return get_class(new Asset);
+        return Asset::class;
     }
 
     /**
@@ -51,5 +53,15 @@ class AssetProcessor extends AbstractElementTypeProcessor
     public static function hasPermission($elementIds, User $user): bool
     {
         return $user->checkPermission(Plugin::PERMISSION_BULKEDIT_ASSETS);
+    }
+
+    public static function getMockElement($elementIds = [], $params = []): Element
+    {
+        $asset = Craft::$app->assets->getAssetById($elementIds[0]);
+        /** @var Asset $elementPlaceholder */
+        $elementPlaceholder = Craft::createObject(static::getType(), $params);
+        // Field availability is determined by volume ID
+        $elementPlaceholder->volumeId = $asset->volumeId;
+        return $elementPlaceholder;
     }
 }

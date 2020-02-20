@@ -39,7 +39,7 @@ class EntryProcessor extends AbstractElementTypeProcessor
      */
     public static function getType(): string
     {
-        return get_class(new Entry);
+        return Entry::class;
     }
 
     /**
@@ -57,15 +57,16 @@ class EntryProcessor extends AbstractElementTypeProcessor
      * @return array
      */
     public static function getEditableAttributes(): array {
-        return [
-            [
-                'name' => 'Title',
-                'handle' => 'title',
-                'strategies' => [
-                    BulkEdit::STRATEGY_REPLACE
-                ]
-            ]
-        ];
+//        return [
+//            [
+//                'name' => 'Title',
+//                'handle' => 'title',
+//                'strategies' => [
+//                    BulkEdit::STRATEGY_REPLACE
+//                ]
+//            ]
+//        ];
+        return [];
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace venveo\bulkedit\elements\processors;
 
+use Craft;
+use craft\base\Element;
 use craft\commerce\records\Product;
 use craft\commerce\records\ProductType;
 use craft\helpers\ArrayHelper;
@@ -48,7 +50,7 @@ class ProductProcessor extends AbstractElementTypeProcessor
      */
     public static function getType(): string
     {
-        return get_class(new \craft\commerce\elements\Product);
+        return \craft\commerce\elements\Product::class;
     }
 
     /**
@@ -60,5 +62,16 @@ class ProductProcessor extends AbstractElementTypeProcessor
     public static function hasPermission($elementIds, User $user): bool
     {
         return $user->checkPermission(Plugin::PERMISSION_BULKEDIT_PRODUCTS);
+    }
+
+    public static function getMockElement($elementIds = [], $params = []): Element
+    {
+        /** @var \craft\commerce\elements\Product $product */
+        $product = \Craft::$app->elements->getElementById($elementIds[0], \craft\commerce\elements\Product::class);
+        /** @var \craft\commerce\elements\Product $elementPlaceholder */
+        $elementPlaceholder = Craft::createObject(static::getType(), $params);
+        // Field availability is determined by volume ID
+        $elementPlaceholder->typeId = $product->typeId;
+        return $elementPlaceholder;
     }
 }

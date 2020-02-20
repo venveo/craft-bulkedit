@@ -2,6 +2,8 @@
 
 namespace venveo\bulkedit\elements\processors;
 
+use Craft;
+use craft\base\Element;
 use craft\elements\Category;
 use craft\helpers\ArrayHelper;
 use craft\records\CategoryGroup;
@@ -48,7 +50,7 @@ class CategoryProcessor extends AbstractElementTypeProcessor
      */
     public static function getType(): string
     {
-        return get_class(new Category);
+        return Category::class;
     }
 
     /**
@@ -60,5 +62,15 @@ class CategoryProcessor extends AbstractElementTypeProcessor
     public static function hasPermission($elementIds, User $user): bool
     {
         return $user->checkPermission(Plugin::PERMISSION_BULKEDIT_CATEGORIES);
+    }
+
+    public static function getMockElement($elementIds = [], $params = []): Element
+    {
+        $category = Craft::$app->categories->getCategoryById($elementIds[0]);
+        /** @var Category $elementPlaceholder */
+        $elementPlaceholder = Craft::createObject(static::getType(), $params);
+        // Field availability is determined by volume ID
+        $elementPlaceholder->groupId = $category->groupId;
+        return $elementPlaceholder;
     }
 }
