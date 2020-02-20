@@ -28,6 +28,7 @@ class EntryProcessor extends AbstractElementTypeProcessor
             ->from('{{%fieldlayouts}} fieldlayouts')
             ->leftJoin('{{%elements}} elements', '[[elements.fieldLayoutId]] = [[fieldlayouts.id]]')
             ->where(['IN', '[[elements.id]]', $elementIds])
+            ->andWhere(['=','fieldlayouts.dateDeleted', null])
             ->all();
 
         return $layouts;

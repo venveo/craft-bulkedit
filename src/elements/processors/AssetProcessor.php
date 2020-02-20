@@ -30,7 +30,7 @@ class AssetProcessor extends AbstractElementTypeProcessor
             ->all();
         $groupIds = ArrayHelper::getColumn($groups, 'volumeId');
 
-        $layouts = FieldLayout::find()->where(['in', 'id', $groupIds])->all();
+        $layouts = FieldLayout::find()->where(['in', 'id', $groupIds])->andWhere(['=','dateDeleted', null])->all();
 
         return $layouts;
     }
