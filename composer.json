@@ -1,8 +1,8 @@
 {
     "name": "venveo/craft-bulkedit",
-    "description": "Bulk edit entries",
+    "description": "Bulk edit Craft CMS element fields",
     "type": "craft-plugin",
-    "version": "2.0.2.1",
+    "version": "2.0.3",
     "keywords": [
         "craft",
         "cms",

@@ -21,17 +21,16 @@ class EntryProcessor extends AbstractElementTypeProcessor
      */
     public static function getLayoutsFromElementIds($elementIds): array
     {
-        $layouts = FieldLayout::find()
-            ->select('fieldlayouts.*')
+        $types = \craft\records\Entry::find()
+            ->select('entrytypes.fieldLayoutId')
             ->distinct(true)
             ->limit(null)
-            ->from('{{%fieldlayouts}} fieldlayouts')
-            ->leftJoin('{{%elements}} elements', '[[elements.fieldLayoutId]] = [[fieldlayouts.id]]')
-            ->where(['IN', '[[elements.id]]', $elementIds])
-            ->andWhere(['=','fieldlayouts.dateDeleted', null])
-            ->all();
+            ->from('{{%entries}} entries')
+            ->leftJoin('{{%entrytypes}} entrytypes', '[[entries.typeId]] = [[entrytypes.id]]')
+            ->where(['IN', '[[entries.id]]', $elementIds])
+            ->column();
 
-        return $layouts;
+        return FieldLayout::find()->where(['IN', '[[id]]', $types])->all();
     }
 
     /**
