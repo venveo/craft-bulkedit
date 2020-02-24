@@ -1,5 +1,9 @@
 # Bulk Edit Changelog
 
+## 2.0.3 - 2020-02-24
+### Fixed
+- Bug where bulk editing a section with a field layout that had been deleted could yield no fields
+
 ## 2.0.2.1 - 2020-02-20
 ### Fixed
 - Error that can occur if trying to bulkedit fields on a soft-deleted layout
