@@ -21,18 +21,27 @@ class AssetProcessor extends AbstractElementTypeProcessor
      */
     public static function getLayoutsFromElementIds($elementIds): array
     {
-        $groups = \craft\records\Asset::find()
+        $volumeIds = \craft\records\Asset::find()
             ->select('volumeId')
             ->distinct(true)
             ->limit(null)
             ->where(['IN', '[[id]]', $elementIds])
-            ->asArray()
-            ->all();
-        $groupIds = ArrayHelper::getColumn($groups, 'volumeId');
+            ->column();
 
-        $layouts = FieldLayout::find()->where(['in', 'id', $groupIds])->andWhere(['=','dateDeleted', null])->all();
+        $fieldLayouts = [];
+        foreach ($volumeIds as $volumeId) {
+            /** @var Volume $volume */
+            $volume = Craft::$app->volumes->getVolumeById($volumeId);
+            if (!$volume->fieldLayoutId) {
+                continue;
+            }
+            $fieldLayout = $volume->getFieldLayout();
+            if ($fieldLayout) {
+                $fieldLayouts[] = $fieldLayout;
+            }
+        }
 
-        return $layouts;
+        return $fieldLayouts;
     }
 
     /**
