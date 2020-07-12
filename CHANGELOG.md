@@ -1,5 +1,9 @@
 # Bulk Edit Changelog
 
+## 2.0.5
+### Fixed
+- Bug where multi-site bulk editing was not working properly (Thanks @monachilada)
+
 ## 2.0.4 - 2020-02-25
 ### Fixed
 - Bug where bulk editing assets with could yield no fields
