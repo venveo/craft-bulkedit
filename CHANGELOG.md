@@ -1,6 +1,6 @@
 # Bulk Edit Changelog
 
-## Unreleased
+## 2.0.5
 ### Fixed
 - Bug where multi-site bulk editing was not working properly (Thanks @monachilada)
 
