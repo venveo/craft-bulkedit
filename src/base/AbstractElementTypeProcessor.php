@@ -15,7 +15,8 @@ abstract class AbstractElementTypeProcessor implements ElementTypeProcessorInter
     public static function getMockElement($elementIds = [], $params = []): Element
     {
         /** @var Element $elementPlaceholder */
-        $elementPlaceholder = Craft::createObject(static::getType(), $params);
+        $params['type'] = static::getType();
+        $elementPlaceholder = Craft::$app->elements->createElement($params);
         return $elementPlaceholder;
     }
 }

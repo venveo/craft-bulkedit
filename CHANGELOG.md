@@ -1,5 +1,12 @@
 # Bulk Edit Changelog
 
+## 2.0.6 - 2021-07-22
+### Fixed
+- Fixed a bug where fields may not always get the correct source site ID
+
+### Other
+- Tested on Craft 3.7
+
 ## 2.0.5
 ### Fixed
 - Bug where multi-site bulk editing was not working properly (Thanks @monachilada)
