@@ -77,11 +77,10 @@ class EntryProcessor extends AbstractElementTypeProcessor
      */
     public static function getMockElement($elementIds = [], $params = []): Element
     {
+        $elementPlaceholder = parent::getMockElement($elementIds, $params);
         $templateEntry = Craft::$app->entries->getEntryById($elementIds[0], $params['siteId']);
-        /** @var Entry $entry */
-        $entry = Craft::createObject(self::getType(), $params);
-        $entry->typeId = $templateEntry->typeId;
-        $entry->sectionId = $templateEntry->sectionId;
-        return $entry;
+        $elementPlaceholder->typeId = $templateEntry->typeId;
+        $elementPlaceholder->sectionId = $templateEntry->sectionId;
+        return $elementPlaceholder;
     }
 }
