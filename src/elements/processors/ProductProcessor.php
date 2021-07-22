@@ -68,7 +68,7 @@ class ProductProcessor extends AbstractElementTypeProcessor
     {
         $elementPlaceholder = parent::getMockElement($elementIds, $params);
         /** @var \craft\commerce\elements\Product $product */
-        $product = \Craft::$app->elements->getElementById($elementIds[0], \craft\commerce\elements\Product::class);
+        $product = \Craft::$app->elements->getElementById($elementIds[0], \craft\commerce\elements\Product::class, $params['siteId']);
         /** @var \craft\commerce\elements\Product $elementPlaceholder */
         // Field availability is determined by volume ID
         $elementPlaceholder->typeId = $product->typeId;

@@ -67,7 +67,7 @@ class CategoryProcessor extends AbstractElementTypeProcessor
     public static function getMockElement($elementIds = [], $params = []): Element
     {
         $elementPlaceholder = parent::getMockElement($elementIds, $params);
-        $category = Craft::$app->categories->getCategoryById($elementIds[0]);
+        $category = Craft::$app->categories->getCategoryById($elementIds[0], $params['siteId']);
         /** @var Category $elementPlaceholder */
         // Field availability is determined by volume ID
         $elementPlaceholder->groupId = $category->groupId;

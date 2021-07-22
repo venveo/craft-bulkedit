@@ -67,7 +67,7 @@ class AssetProcessor extends AbstractElementTypeProcessor
     public static function getMockElement($elementIds = [], $params = []): Element
     {
         $elementPlaceholder = parent::getMockElement($elementIds, $params);
-        $asset = Craft::$app->assets->getAssetById($elementIds[0]);
+        $asset = Craft::$app->assets->getAssetById($elementIds[0], $params['siteId']);
         // Field availability is determined by volume ID
         $elementPlaceholder->volumeId = $asset->volumeId;
         return $elementPlaceholder;
