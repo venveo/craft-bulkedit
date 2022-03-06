@@ -15,8 +15,10 @@ If applicable, add screenshots to help explain your problem.
 
 **Environmental Info**
  - Craft CMS Version: 
- - Multi-site Mode: Yes/No
+ - Multi-site Mode (Yes/No): 
  - Plugin Version: 
+ - PHP Version: 
+ - Database Driver (MySQL/Postgres): 
 
 **Additional context**
 Add any other context about the problem here.
