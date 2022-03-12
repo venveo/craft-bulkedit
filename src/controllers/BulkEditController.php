@@ -36,7 +36,6 @@ class BulkEditController extends Controller
     /**
      * Return the file preview for an Asset.
      *
-     * @return Response
      * @throws BadRequestHttpException if not a valid request
      * @throws LoaderError
      * @throws RuntimeError
@@ -109,13 +108,12 @@ class BulkEditController extends Controller
     }
 
     /**
-     * @return \yii\web\Response
      * @throws BadRequestHttpException
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function actionGetEditScreen()
+    public function actionGetEditScreen(): \yii\web\Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -127,15 +125,8 @@ class BulkEditController extends Controller
         $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
         $fields = Craft::$app->getRequest()->getRequiredParam('fields');
 
-        $viewParams = Craft::$app->getRequest()->getParam('viewParams');
-
-        // Pull out the enabled fields
-        $enabledFields = [];
-        foreach ($fields as $fieldId => $field) {
-            if ($field['enabled']) {
-                $enabledFields[$fieldId] = $field;
-            }
-        }
+        Craft::$app->getRequest()->getParam('viewParams');
+        $enabledFields = array_filter($fields, fn($field) => $field['enabled']);
 
 
         $site = Craft::$app->getSites()->getSiteById($siteId);
@@ -145,7 +136,7 @@ class BulkEditController extends Controller
 
 
         $fields = Field::findAll(array_keys($enabledFields));
-        if (count($fields) !== count($enabledFields)) {
+        if (count($fields) !== count((array) $enabledFields)) {
             throw new Exception('Could not find all fields requested');
         }
 
@@ -155,17 +146,13 @@ class BulkEditController extends Controller
             throw new Exception('Could not find all elements requested');
         }
 
-        try {
-            $fieldModels = [];
-            /** @var Field $field */
-            foreach ($fields as $field) {
-                $fieldModel = Craft::$app->fields->getFieldById($field->id);
-                if ($fieldModel && Plugin::$plugin->bulkEdit->isFieldSupported($fieldModel)) {
-                    $fieldModels[] = $fieldModel;
-                }
+        $fieldModels = [];
+        /** @var Field $field */
+        foreach ($fields as $field) {
+            $fieldModel = Craft::$app->fields->getFieldById($field->id);
+            if ($fieldModel && Plugin::$plugin->bulkEdit->isFieldSupported($fieldModel)) {
+                $fieldModels[] = $fieldModel;
             }
-        } catch (Exception $e) {
-            throw $e;
         }
 
         $view = Craft::$app->getView();
@@ -207,11 +194,10 @@ class BulkEditController extends Controller
     }
 
     /**
-     * @return \yii\web\Response
      * @throws BadRequestHttpException
      * @throws \yii\db\Exception
      */
-    public function actionSaveContext()
+    public function actionSaveContext(): \yii\web\Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -225,6 +211,7 @@ class BulkEditController extends Controller
         foreach ($fieldMeta as $field) {
             $fieldStrategies[$field['id']] = $field['strategy'];
         }
+
         $fieldIds = array_keys($fieldStrategies);
         $fields = Field::findAll($fieldIds);
 
@@ -237,9 +224,11 @@ class BulkEditController extends Controller
                     $fieldId = $field->id;
                 }
             }
+
             if (!isset($fieldId)) {
                 throw new Exception('Failed to locate field');
             }
+
             $keyedFieldValues[$fieldId] = $value;
         }
 
@@ -251,7 +240,7 @@ class BulkEditController extends Controller
             return $this->asJson([
                 'success' => true
             ]);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return $this->asErrorJson('Failed to save context');
         }
     }

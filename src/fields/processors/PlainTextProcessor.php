@@ -24,7 +24,7 @@ class PlainTextProcessor extends AbstractFieldProcessor
 
     /**
      * The fully qualified class name for the element this processor works on
-     * @return array
+     * @return mixed[]
      */
     public static function getSupportedFields(): array
     {
@@ -33,7 +33,7 @@ class PlainTextProcessor extends AbstractFieldProcessor
 
     /**
      * Returns the supported strategies for this field type
-     * @return array
+     * @return string[]
      */
     public static function getSupportedStrategies(): array
     {

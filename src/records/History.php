@@ -27,7 +27,7 @@ class History extends ActiveRecord
     /*
      * @inheritdoc
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%bulkedit_history}}';
     }
@@ -36,7 +36,7 @@ class History extends ActiveRecord
     /**
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getContext(): ActiveQueryInterface
+    public function getContext(): \craft\db\ActiveQuery
     {
         return $this->hasOne(EditContext::class, ['id' => 'contextId']);
     }
@@ -44,7 +44,7 @@ class History extends ActiveRecord
     /**
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement(): ActiveQueryInterface
+    public function getElement(): \craft\db\ActiveQuery
     {
         return $this->hasOne(Element::class, ['id' => 'elementId']);
     }
@@ -52,7 +52,7 @@ class History extends ActiveRecord
     /**
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getField(): ActiveQueryInterface
+    public function getField(): \craft\db\ActiveQuery
     {
         return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
@@ -60,7 +60,7 @@ class History extends ActiveRecord
     /**
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSite(): ActiveQueryInterface
+    public function getSite(): \craft\db\ActiveQuery
     {
         return $this->hasOne(Site::class, ['id' => 'siteId']);
     }

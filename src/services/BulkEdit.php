@@ -47,19 +47,54 @@ use yii\db\ActiveQueryInterface;
  */
 class BulkEdit extends Component
 {
-    const STRATEGY_REPLACE = 'replace';
-    const STRATEGY_MERGE = 'merge';
-    const STRATEGY_SUBTRACT = 'subtract';
-    const STRATEGY_ADD = 'add';
-    const STRATEGY_MULTIPLY = 'multiply';
-    const STRATEGY_DIVIDE = 'divide';
-    const STRATEGY_OBJECT_TEMPLATE = 'object_template';
+    /**
+     * @var string
+     */
+    public const STRATEGY_REPLACE = 'replace';
 
-    const EVENT_REGISTER_ELEMENT_PROCESSORS = 'registerElementProcessors';
-    const EVENT_REGISTER_FIELD_PROCESSORS = 'registerFieldProcessors';
+    /**
+     * @var string
+     */
+    public const STRATEGY_MERGE = 'merge';
+
+    /**
+     * @var string
+     */
+    public const STRATEGY_SUBTRACT = 'subtract';
+
+    /**
+     * @var string
+     */
+    public const STRATEGY_ADD = 'add';
+
+    /**
+     * @var string
+     */
+    public const STRATEGY_MULTIPLY = 'multiply';
+
+    /**
+     * @var string
+     */
+    public const STRATEGY_DIVIDE = 'divide';
+
+    /**
+     * @var string
+     */
+    public const STRATEGY_OBJECT_TEMPLATE = 'object_template';
+
+    /**
+     * @var string
+     */
+    public const EVENT_REGISTER_ELEMENT_PROCESSORS = 'registerElementProcessors';
+
+    /**
+     * @var string
+     */
+    public const EVENT_REGISTER_FIELD_PROCESSORS = 'registerFieldProcessors';
 
     // Memoized values
     private static $_ELEMENT_TYPE_PROCESSORS;
+
     private static $_FIELD_TYPE_PROCESSORS;
 
     /**
@@ -79,6 +114,7 @@ class BulkEdit extends Component
         if (!$processor) {
             throw new Exception('Unable to process element type');
         }
+
         $layouts = $processor::getLayoutsFromElementIds($elementIds);
 
         $fields = [];
@@ -97,9 +133,13 @@ class BulkEdit extends Component
                 }
             }
         }
+
         return $fields;
     }
 
+    /**
+     * @return \venveo\bulkedit\models\AttributeWrapper[]
+     */
     public function getAttributeWrappers($elementType): array {
 
         /** @var ElementTypeProcessorInterface $processor */
@@ -109,12 +149,10 @@ class BulkEdit extends Component
         }
 
         $attributes = $processor::getEditableAttributes();
-        return array_map(function($attribute) {
-            return new AttributeWrapper([
-                'handle' => $attribute['handle'],
-                'name' => $attribute['name']
-            ]);
-        }, $attributes);
+        return array_map(fn($attribute) => new AttributeWrapper([
+            'handle' => $attribute['handle'],
+            'name' => $attribute['name']
+        ]), $attributes);
     }
 
     /**
@@ -140,12 +178,12 @@ class BulkEdit extends Component
         if (array_key_exists($elementType, $processorsKeyedByClass)) {
             return $processorsKeyedByClass[$elementType];
         }
+
         return null;
     }
 
     /**
      * Gets an array of all element type processors
-     * @return array
      */
     public function getElementTypeProcessors(): array
     {
@@ -173,26 +211,19 @@ class BulkEdit extends Component
 
     /**
      * Gets all unique elements from incomplete bulk edit jobs
-     *
-     * @param EditContext $context
-     * @return ActiveQuery
      */
-    public function getPendingElementsHistoriesFromContext(EditContext $context): ActiveQuery
+    public function getPendingElementsHistoriesFromContext(EditContext $context): \craft\db\ActiveQuery
     {
-        $items = History::find()
+        return History::find()
             ->limit(null)
             ->where(['=', 'contextId', $context->id])
             ->andWhere(['=', 'status', 'pending'])->indexBy('elementId');
-
-        return $items;
     }
 
     /**
      * Gets all pending bulk edit changes for a particular job
      *
-     * @param EditContext $context
      * @param null $elementId
-     * @return ActiveQueryInterface
      */
     public function getPendingHistoryFromContext(EditContext $context, $elementId = null): ActiveQueryInterface
     {
@@ -200,6 +231,7 @@ class BulkEdit extends Component
         if ($elementId !== null) {
             $query->where(['=', 'elementId', $elementId]);
         }
+
         return $query;
     }
 
@@ -207,7 +239,6 @@ class BulkEdit extends Component
      * Takes an array of history changes for a particular element and saves it to that element.
      *
      * @param $historyItems
-     * @param Element $element
      * @return Element
      * @throws Throwable
      * @throws \yii\base\Exception
@@ -219,9 +250,9 @@ class BulkEdit extends Component
         try {
             /** @var History $historyItem */
             foreach ($historyItems as $historyItem) {
-                $fieldHandle = $historyItem->field->handle;
+                $fieldHandle = $historyItem->getField()->handle;
                 $newValue = \GuzzleHttp\json_decode($historyItem->newValue, true);
-                $originalValue = $element->getFieldValue($historyItem->field->handle);
+                $originalValue = $element->getFieldValue($historyItem->getField()->handle);
 
                 // Store a snapshot of the original field value
                 $historyItem->originalValue = \GuzzleHttp\json_encode($originalValue);
@@ -234,22 +265,22 @@ class BulkEdit extends Component
                 $historyItem->save();
                 Craft::info('Saved history item', __METHOD__);
             }
+
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
             Craft::$app->elements->saveElement($element, false);
 
             Craft::info('Saved element', __METHOD__);
             $transaction->commit();
             return $element;
-        } catch (Exception $e) {
+        } catch (Exception $exception) {
             $transaction->rollBack();
             Craft::error('Transaction rolled back', __METHOD__);
-            throw $e;
+            throw $exception;
         }
     }
 
     /**
      * Retrieves the processor for a type of field
-     * @param FieldInterface $fieldType
      * @param $strategy
      * @return AbstractFieldProcessor|null field processor class
      * @throws ReflectionException
@@ -281,13 +312,13 @@ class BulkEdit extends Component
 
     /**
      * Gets an array of all field processors
-     * @return array
      */
     public function getFieldProcessors(): array
     {
         if (self::$_FIELD_TYPE_PROCESSORS !== null) {
             return self::$_FIELD_TYPE_PROCESSORS;
         }
+
         $processors = [
             PlainTextProcessor::class,
             RelationFieldProcessor::class,
@@ -311,14 +342,15 @@ class BulkEdit extends Component
                 return true;
             }
         }
+
         return false;
     }
 
     /**
      * Gets a general list of all field types supported by the strategies we have
-     * @return array
+     * @return mixed[]
      */
-    public function getSupportedFieldTypes()
+    public function getSupportedFieldTypes(): array
     {
         $fieldProcessors = $this->getFieldProcessors();
         $supportedFields = [];
@@ -327,20 +359,20 @@ class BulkEdit extends Component
             $fields = $fieldProcessor::getSupportedFields();
             $supportedFields = array_merge($supportedFields, $fields);
         }
+
         return $supportedFields;
     }
 
     /**
      * Gets an array of values for supported strategies on field types. This is used by the _fields template
-     * @param FieldInterface $field
-     * @return array
+     * @return array<int, array{value: string, label: string}>
      */
     public function getSupportedStrategiesForField(FieldInterface $field): array
     {
         $processorsList = $this->getProcessorsKeyedByStrategyForField($field);
 
         $availableStrategies = [];
-        foreach ($processorsList as $strategy => $processors) {
+        foreach (array_keys($processorsList) as $strategy) {
             switch ($strategy) {
                 case self::STRATEGY_REPLACE:
                     $availableStrategies[] = ['value' => self::STRATEGY_REPLACE, 'label' => 'Replace'];
@@ -369,10 +401,9 @@ class BulkEdit extends Component
 
     /**
      *
-     * @param FieldInterface $field
-     * @return array
+     * @return array<int|string, \venveo\bulkedit\base\AbstractFieldProcessor[]>
      */
-    public function getProcessorsKeyedByStrategyForField(FieldInterface $field)
+    public function getProcessorsKeyedByStrategyForField(FieldInterface $field): array
     {
         $processors = $this->getFieldProcessors();
 
@@ -383,10 +414,12 @@ class BulkEdit extends Component
             if (!$processor::supportsField($field)) {
                 continue;
             }
+
             foreach ($processor::getSupportedStrategies() as $strategy) {
                 $processorsByStrategy[$strategy][] = $processor;
             }
         }
+
         return $processorsByStrategy;
     }
 
@@ -401,7 +434,7 @@ class BulkEdit extends Component
      * @throws ReflectionException
      * @throws \yii\db\Exception
      */
-    public function saveContext($elementType, $siteId, $elementIds, $fieldIds, $keyedFieldValues, $fieldStrategies)
+    public function saveContext($elementType, $siteId, $elementIds, $fieldIds, $keyedFieldValues, $fieldStrategies): void
     {
         /** @var AbstractElementTypeProcessor $processor */
         $processor = $this->getElementTypeProcessor($elementType);

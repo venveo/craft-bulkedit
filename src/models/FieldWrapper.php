@@ -20,6 +20,8 @@ use yii\db\ActiveQueryInterface;
 class FieldWrapper extends Model
 {
     public $field;
+
     public $strategy;
+
     public $layouts;
 }

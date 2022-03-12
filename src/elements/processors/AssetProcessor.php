@@ -17,7 +17,7 @@ class AssetProcessor extends AbstractElementTypeProcessor
     /**
      * Gets a unique list of field layouts from a list of element IDs
      * @param $elementIds
-     * @return array
+     * @return mixed[]
      */
     public static function getLayoutsFromElementIds($elementIds): array
     {
@@ -35,6 +35,7 @@ class AssetProcessor extends AbstractElementTypeProcessor
             if (!$volume->fieldLayoutId) {
                 continue;
             }
+
             $fieldLayout = $volume->getFieldLayout();
             if ($fieldLayout) {
                 $fieldLayouts[] = $fieldLayout;
@@ -46,7 +47,6 @@ class AssetProcessor extends AbstractElementTypeProcessor
 
     /**
      * The fully qualified class name for the element this processor works on
-     * @return string
      */
     public static function getType(): string
     {
@@ -57,7 +57,6 @@ class AssetProcessor extends AbstractElementTypeProcessor
      * Return whether a given user has permission to perform bulk edit actions on these elements
      * @param $elementIds
      * @param $user
-     * @return bool
      */
     public static function hasPermission($elementIds, User $user): bool
     {

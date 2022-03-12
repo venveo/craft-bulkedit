@@ -10,10 +10,6 @@ use venveo\bulkedit\services\BulkEdit;
 
 abstract class AbstractFieldProcessor implements FieldProcessorInterface
 {
-    /**
-     * @param FieldInterface $field
-     * @return bool
-     */
     public static function supportsField(FieldInterface $field): bool
     {
         foreach (static::getSupportedFields() as $fieldType) {
@@ -21,6 +17,7 @@ abstract class AbstractFieldProcessor implements FieldProcessorInterface
                 return true;
             }
         }
+
         return false;
     }
 

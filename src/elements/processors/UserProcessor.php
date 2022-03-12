@@ -5,6 +5,7 @@ namespace venveo\bulkedit\elements\processors;
 use Craft;
 use craft\elements\User;
 use craft\records\FieldLayout;
+use craft\services\ProjectConfig;
 use craft\services\Users;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\Plugin;
@@ -15,22 +16,20 @@ class UserProcessor extends AbstractElementTypeProcessor
     /**
      * Gets a unique list of field layouts from a list of element IDs
      * @param $elementIds
-     * @return array
+     * @return \yii\db\ActiveRecord[]
      */
     public static function getLayoutsFromElementIds($elementIds): array
     {
         $projectConfig = Craft::$app->projectConfig;
-        $fieldLayouts = $projectConfig->get(Users::CONFIG_USERLAYOUT_KEY);
+        $fieldLayouts = $projectConfig->get(ProjectConfig::PATH_USER_FIELD_LAYOUTS);
         $fieldLayoutsUIDs = array_keys($fieldLayouts);
-        $layouts = FieldLayout::find()
+        return FieldLayout::find()
             ->where(['in', 'uid', $fieldLayoutsUIDs])
             ->all();
-        return $layouts;
     }
 
     /**
      * The fully qualified class name for the element this processor works on
-     * @return string
      */
     public static function getType(): string
     {
@@ -41,7 +40,6 @@ class UserProcessor extends AbstractElementTypeProcessor
      * Return whether a given user has permission to perform bulk edit actions on these elements
      * @param $elementIds
      * @param $user
-     * @return bool
      */
     public static function hasPermission($elementIds, \craft\web\User $user): bool
     {

@@ -24,7 +24,7 @@ class BulkEditElementAction extends ElementAction
 {
     public $label;
 
-    public function init()
+    public function init(): void
     {
         if ($this->label === null) {
             $this->label = 'Bulk Edit';
@@ -43,7 +43,7 @@ class BulkEditElementAction extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): null|string
     {
         $type = Json::encode(static::class);
 

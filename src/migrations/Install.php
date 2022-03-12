@@ -16,7 +16,7 @@ class Install extends Migration
     /*
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
         if ($this->createTables()) {
@@ -33,13 +33,10 @@ class Install extends Migration
     /*
      * @inheritdoc
      */
-
     /**
      * Creates all necessary tables for this plugin
-     *
-     * @return bool
      */
-    protected function createTables()
+    protected function createTables(): bool
     {
         $tablesCreated = false;
 
@@ -84,7 +81,7 @@ class Install extends Migration
         return $tablesCreated;
     }
 
-    protected function createIndexes()
+    protected function createIndexes(): void
     {
         $this->createIndex(null, '{{%bulkedit_editcontext}}', ['ownerId'], false);
         $this->createIndex(null, '{{%bulkedit_history}}', ['contextId'], false);
@@ -94,7 +91,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%bulkedit_history}}', ['contextId', 'elementId', 'fieldId', 'siteId'], true);
     }
 
-    protected function addForeignKeys()
+    protected function addForeignKeys(): void
     {
         $this->addForeignKey(null, '{{%bulkedit_editcontext}}', ['ownerId'], '{{%users}}', ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, '{{%bulkedit_editcontext}}', ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
@@ -105,7 +102,7 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%bulkedit_history}}', ['siteId'], '{{%sites}}', ['id'], 'CASCADE', null);
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
         $this->removeTables();
@@ -115,10 +112,8 @@ class Install extends Migration
 
     /**
      * Remove all tables created by this plugin
-     *
-     * @return bool
      */
-    protected function removeTables()
+    protected function removeTables(): void
     {
         $this->dropTableIfExists('{{%bulkedit_history}}');
         $this->dropTableIfExists('{{%bulkedit_editcontext}}');

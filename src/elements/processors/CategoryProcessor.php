@@ -18,7 +18,7 @@ class CategoryProcessor extends AbstractElementTypeProcessor
     /**
      * Gets a unique list of field layouts from a list of element IDs
      * @param $elementIds
-     * @return array
+     * @return \yii\db\ActiveRecord[]
      */
     public static function getLayoutsFromElementIds($elementIds): array
     {
@@ -39,14 +39,11 @@ class CategoryProcessor extends AbstractElementTypeProcessor
             ->all();
         $layoutIds = ArrayHelper::getColumn($layouts, 'fieldLayoutId');
 
-        $layouts = FieldLayout::find()->where(['in', 'id', $layoutIds])->all();
-
-        return $layouts;
+        return FieldLayout::find()->where(['in', 'id', $layoutIds])->all();
     }
 
     /**
      * The fully qualified class name for the element this processor works on
-     * @return string
      */
     public static function getType(): string
     {
@@ -57,7 +54,6 @@ class CategoryProcessor extends AbstractElementTypeProcessor
      * Return whether a given user has permission to perform bulk edit actions on these elements
      * @param $elementIds
      * @param $user
-     * @return bool
      */
     public static function hasPermission($elementIds, User $user): bool
     {

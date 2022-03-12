@@ -12,7 +12,7 @@ class m181213_193509_move_strategy_field extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): void
     {
         $this->dropColumn('{{%bulkedit_editcontext}}', 'strategy');
         $this->addColumn('{{%bulkedit_history}}', 'strategy', $this->string(16)->notNull()->defaultValue('replace'));
@@ -21,7 +21,7 @@ class m181213_193509_move_strategy_field extends Migration
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): void
     {
         $this->dropColumn('{{%bulkedit_history}}', 'strategy');
         $this->addColumn('{{%bulkedit_editcontext}}', 'strategy', $this->string(16)->notNull()->defaultValue('replace'));

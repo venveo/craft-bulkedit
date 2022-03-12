@@ -21,7 +21,7 @@ use yii\db\ActiveQueryInterface;
  */
 class EditContext extends ActiveRecord
 {
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%bulkedit_editcontext}}';
     }
@@ -30,7 +30,7 @@ class EditContext extends ActiveRecord
     /**
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getOwner(): ActiveQueryInterface
+    public function getOwner(): \craft\db\ActiveQuery
     {
         return $this->hasOne(User::class, ['id' => 'ownerId']);
     }
@@ -38,7 +38,7 @@ class EditContext extends ActiveRecord
     /**
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSite(): ActiveQueryInterface
+    public function getSite(): \craft\db\ActiveQuery
     {
         return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
@@ -47,7 +47,7 @@ class EditContext extends ActiveRecord
     /**
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getHistoryItems(): ActiveQueryInterface
+    public function getHistoryItems(): \craft\db\ActiveQuery
     {
         return $this->hasMany(History::class, ['contextId' => 'id']);
     }
