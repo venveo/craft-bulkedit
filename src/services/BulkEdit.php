@@ -37,7 +37,6 @@ use venveo\bulkedit\models\FieldWrapper;
 use venveo\bulkedit\queue\jobs\SaveBulkEditJob;
 use venveo\bulkedit\records\EditContext;
 use venveo\bulkedit\records\History;
-use yii\db\ActiveQuery;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -140,7 +139,8 @@ class BulkEdit extends Component
     /**
      * @return \venveo\bulkedit\models\AttributeWrapper[]
      */
-    public function getAttributeWrappers($elementType): array {
+    public function getAttributeWrappers($elementType): array
+    {
 
         /** @var ElementTypeProcessorInterface $processor */
         $processor = $this->getElementTypeProcessor($elementType);
@@ -151,7 +151,7 @@ class BulkEdit extends Component
         $attributes = $processor::getEditableAttributes();
         return array_map(fn($attribute) => new AttributeWrapper([
             'handle' => $attribute['handle'],
-            'name' => $attribute['name']
+            'name' => $attribute['name'],
         ]), $attributes);
     }
 
@@ -306,7 +306,6 @@ class BulkEdit extends Component
 
                 return $instance;
             }
-
         }
     }
 
@@ -322,7 +321,7 @@ class BulkEdit extends Component
         $processors = [
             PlainTextProcessor::class,
             RelationFieldProcessor::class,
-            NumberFieldProcessor::class
+            NumberFieldProcessor::class,
         ];
 
         $event = new RegisterComponentTypesEvent();
@@ -464,7 +463,7 @@ class BulkEdit extends Component
                     (int)$siteId,
                     '[]',
                     \GuzzleHttp\json_encode($keyedFieldValues[$fieldId]),
-                    $strategy
+                    $strategy,
                 ];
             }
         }
@@ -474,7 +473,7 @@ class BulkEdit extends Component
 
 
         $job = new SaveBulkEditJob([
-            'context' => $context
+            'context' => $context,
         ]);
         Craft::$app->getQueue()->push($job);
     }

@@ -5,15 +5,12 @@ namespace venveo\bulkedit\elements\processors;
 use Craft;
 use craft\base\Element;
 use craft\elements\Asset;
-use craft\helpers\ArrayHelper;
-use craft\records\FieldLayout;
 use craft\web\User;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\Plugin;
 
 class AssetProcessor extends AbstractElementTypeProcessor
 {
-
     /**
      * Gets a unique list of field layouts from a list of element IDs
      * @param $elementIds

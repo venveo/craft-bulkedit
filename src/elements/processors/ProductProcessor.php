@@ -2,7 +2,6 @@
 
 namespace venveo\bulkedit\elements\processors;
 
-use Craft;
 use craft\base\Element;
 use craft\commerce\records\Product;
 use craft\commerce\records\ProductType;
@@ -14,7 +13,6 @@ use venveo\bulkedit\Plugin;
 
 class ProductProcessor extends AbstractElementTypeProcessor
 {
-
     /**
      * Gets a unique list of field layouts from a list of element IDs
      * @param $elementIds

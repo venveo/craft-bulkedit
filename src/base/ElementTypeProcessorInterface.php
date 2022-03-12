@@ -7,7 +7,6 @@ use craft\web\User;
 
 interface ElementTypeProcessorInterface
 {
-
     /**
      * Gets a unique list of field layouts from a list of element IDs
      * @param $elementIds

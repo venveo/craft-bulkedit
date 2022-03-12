@@ -10,7 +10,6 @@ use venveo\bulkedit\services\BulkEdit;
 
 class RelationFieldProcessor extends AbstractFieldProcessor
 {
-
     /**
      * The fully qualified class name for the element this processor works on
      * @return array<class-string<\craft\fields\BaseRelationField>>
@@ -18,7 +17,7 @@ class RelationFieldProcessor extends AbstractFieldProcessor
     public static function getSupportedFields(): array
     {
         return [
-            BaseRelationField::class
+            BaseRelationField::class,
         ];
     }
 

@@ -73,7 +73,7 @@ class Install extends Migration
                     'siteId' => $this->integer()->notNull(),
                     'originalValue' => $this->text(),
                     'newValue' => $this->text(),
-                    'strategy' => $this->string(16)->notNull()->defaultValue('replace')
+                    'strategy' => $this->string(16)->notNull()->defaultValue('replace'),
                 ]
             );
         }

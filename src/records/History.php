@@ -34,7 +34,7 @@ class History extends ActiveRecord
 
 
     /**
-     * @return ActiveQueryInterface The relational query object.
+     * @return \craft\db\ActiveQuery The relational query object.
      */
     public function getContext(): \craft\db\ActiveQuery
     {
@@ -42,7 +42,7 @@ class History extends ActiveRecord
     }
 
     /**
-     * @return ActiveQueryInterface The relational query object.
+     * @return \craft\db\ActiveQuery The relational query object.
      */
     public function getElement(): \craft\db\ActiveQuery
     {
@@ -50,7 +50,7 @@ class History extends ActiveRecord
     }
 
     /**
-     * @return ActiveQueryInterface The relational query object.
+     * @return \craft\db\ActiveQuery The relational query object.
      */
     public function getField(): \craft\db\ActiveQuery
     {
@@ -58,7 +58,7 @@ class History extends ActiveRecord
     }
 
     /**
-     * @return ActiveQueryInterface The relational query object.
+     * @return \craft\db\ActiveQuery The relational query object.
      */
     public function getSite(): \craft\db\ActiveQuery
     {

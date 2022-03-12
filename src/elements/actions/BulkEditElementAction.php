@@ -22,13 +22,11 @@ use venveo\bulkedit\assetbundles\bulkeditelementaction\BulkEditElementActionAsse
  */
 class BulkEditElementAction extends ElementAction
 {
-    public $label;
+    public string $label;
 
     public function init(): void
     {
-        if ($this->label === null) {
-            $this->label = 'Bulk Edit';
-        }
+        $this->label = 'Bulk Edit';
     }
 
     /**
@@ -74,5 +72,6 @@ EOD;
         $view = Craft::$app->getView();
         $view->registerJs($js);
         $view->registerAssetBundle(BulkEditElementActionAsset::class);
+        return null;
     }
 }

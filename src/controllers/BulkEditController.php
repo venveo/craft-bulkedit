@@ -91,7 +91,7 @@ class BulkEditController extends Controller
             'elementType' => $elementType,
             'bulkedit' => $service,
             'elementIds' => $elementIds,
-            'site' => $site
+            'site' => $site,
         ]);
 
         $responseData = [
@@ -99,7 +99,7 @@ class BulkEditController extends Controller
             'modalHtml' => $modalHtml,
             'requestId' => $requestId,
             'elementIds' => $elementIds,
-            'siteId' => $site->id
+            'siteId' => $site->id,
         ];
         $responseData['headHtml'] = $view->getHeadHtml();
         $responseData['footHtml'] = $view->getBodyHtml();
@@ -160,7 +160,7 @@ class BulkEditController extends Controller
         /** @var ElementTypeProcessorInterface $processor */
         $processor = Plugin::getInstance()->bulkEdit->getElementTypeProcessor($elementType);
         $elementPlaceholder = $processor::getMockElement($elementIds, [
-            'siteId' => $siteId
+            'siteId' => $siteId,
         ]);
 
         // We've gotta register any asset bundles - this won't actually be rendered
@@ -169,7 +169,7 @@ class BulkEditController extends Controller
                 'field' => $fieldModel,
                 'static' => true,
                 'element' => $elementPlaceholder,
-                'required' => false
+                'required' => false,
             ]);
         }
 
@@ -179,13 +179,13 @@ class BulkEditController extends Controller
             'elementPlaceholder' => $elementPlaceholder,
             'elementIds' => $elementIds,
             'fieldData' => $enabledFields,
-            'site' => $site
+            'site' => $site,
         ]);
         $responseData = [
             'success' => true,
             'modalHtml' => $modalHtml,
             'requestId' => $requestId,
-            'siteId' => $site->id
+            'siteId' => $site->id,
         ];
         $responseData['headHtml'] = $view->getHeadHtml();
         $responseData['footHtml'] = $view->getBodyHtml();
@@ -238,7 +238,7 @@ class BulkEditController extends Controller
             Plugin::$plugin->bulkEdit->saveContext($elementType, $siteId, $elementIds, $fieldIds, $keyedFieldValues, $fieldStrategies);
 
             return $this->asJson([
-                'success' => true
+                'success' => true,
             ]);
         } catch (Exception) {
             return $this->asErrorJson('Failed to save context');

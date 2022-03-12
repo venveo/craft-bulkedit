@@ -13,7 +13,6 @@ use venveo\bulkedit\services\BulkEdit;
 
 class EntryProcessor extends AbstractElementTypeProcessor
 {
-
     /**
      * Gets a unique list of field layouts from a list of element IDs
      * @param $elementIds
@@ -54,7 +53,8 @@ class EntryProcessor extends AbstractElementTypeProcessor
     /**
      * @return mixed[]
      */
-    public static function getEditableAttributes(): array {
+    public static function getEditableAttributes(): array
+    {
 //        return [
 //            [
 //                'name' => 'Title',

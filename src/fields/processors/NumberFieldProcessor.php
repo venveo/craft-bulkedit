@@ -10,7 +10,6 @@ use venveo\bulkedit\services\BulkEdit;
 
 class NumberFieldProcessor extends AbstractFieldProcessor
 {
-
     /**
      * The fully qualified class name for the element this processor works on
      * @return array<class-string<\craft\fields\Number>>
@@ -18,7 +17,7 @@ class NumberFieldProcessor extends AbstractFieldProcessor
     public static function getSupportedFields(): array
     {
         return [
-            Number::class
+            Number::class,
         ];
     }
 

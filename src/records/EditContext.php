@@ -28,7 +28,7 @@ class EditContext extends ActiveRecord
 
 
     /**
-     * @return ActiveQueryInterface The relational query object.
+     * @return \craft\db\ActiveQuery The relational query object.
      */
     public function getOwner(): \craft\db\ActiveQuery
     {
@@ -36,7 +36,7 @@ class EditContext extends ActiveRecord
     }
 
     /**
-     * @return ActiveQueryInterface The relational query object.
+     * @return \craft\db\ActiveQuery The relational query object.
      */
     public function getSite(): \craft\db\ActiveQuery
     {
@@ -45,7 +45,7 @@ class EditContext extends ActiveRecord
 
 
     /**
-     * @return ActiveQueryInterface The relational query object.
+     * @return \craft\db\ActiveQuery The relational query object.
      */
     public function getHistoryItems(): \craft\db\ActiveQuery
     {

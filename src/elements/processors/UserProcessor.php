@@ -6,13 +6,11 @@ use Craft;
 use craft\elements\User;
 use craft\records\FieldLayout;
 use craft\services\ProjectConfig;
-use craft\services\Users;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\Plugin;
 
 class UserProcessor extends AbstractElementTypeProcessor
 {
-
     /**
      * Gets a unique list of field layouts from a list of element IDs
      * @param $elementIds

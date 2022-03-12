@@ -34,12 +34,11 @@ use yii\base\Event;
  */
 class Plugin extends BasePlugin
 {
-
-    const PERMISSION_BULKEDIT_ENTRIES = 'PERMISSION_BULKEDIT_ENTRIES';
-    const PERMISSION_BULKEDIT_PRODUCTS = 'PERMISSION_BULKEDIT_PRODUCTS';
-    const PERMISSION_BULKEDIT_ASSETS = 'PERMISSION_BULKEDIT_ASSETS';
-    const PERMISSION_BULKEDIT_CATEGORIES = 'PERMISSION_BULKEDIT_CATEGORIES';
-    const PERMISSION_BULKEDIT_USERS = 'PERMISSION_BULKEDIT_USERS';
+    public const PERMISSION_BULKEDIT_ENTRIES = 'PERMISSION_BULKEDIT_ENTRIES';
+    public const PERMISSION_BULKEDIT_PRODUCTS = 'PERMISSION_BULKEDIT_PRODUCTS';
+    public const PERMISSION_BULKEDIT_ASSETS = 'PERMISSION_BULKEDIT_ASSETS';
+    public const PERMISSION_BULKEDIT_CATEGORIES = 'PERMISSION_BULKEDIT_CATEGORIES';
+    public const PERMISSION_BULKEDIT_USERS = 'PERMISSION_BULKEDIT_USERS';
     /**
      * @var Plugin
      */
@@ -53,24 +52,24 @@ class Plugin extends BasePlugin
 
         $this->setComponents(['bulkEdit' => BulkEdit::class]);
 
-        Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS, function (RegisterUserPermissionsEvent $event) {
+        Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS, function(RegisterUserPermissionsEvent $event) {
             $permissions = [];
             $permissions[self::PERMISSION_BULKEDIT_ENTRIES] = [
-                'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Entries')
+                'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Entries'),
             ];
             $permissions[self::PERMISSION_BULKEDIT_ASSETS] = [
-                'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Assets')
+                'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Assets'),
             ];
             $permissions[self::PERMISSION_BULKEDIT_CATEGORIES] = [
-                'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Categories')
+                'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Categories'),
             ];
             $permissions[self::PERMISSION_BULKEDIT_USERS] = [
-                'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Users')
+                'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Users'),
             ];
 
             if (Craft::$app->plugins->isPluginInstalled('commerce')) {
                 $permissions[self::PERMISSION_BULKEDIT_PRODUCTS] = [
-                    'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Products')
+                    'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Products'),
                 ];
             }
 
@@ -80,7 +79,7 @@ class Plugin extends BasePlugin
         if (Craft::$app->request->isCpRequest) {
             if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_ENTRIES)) {
                 Event::on(Entry::class, Element::EVENT_REGISTER_ACTIONS,
-                    function (RegisterElementActionsEvent $event) {
+                    function(RegisterElementActionsEvent $event) {
                         $event->actions[] = BulkEditElementAction::class;
                     }
                 );
@@ -88,7 +87,7 @@ class Plugin extends BasePlugin
 
             if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_CATEGORIES)) {
                 Event::on(Category::class, Element::EVENT_REGISTER_ACTIONS,
-                    function (RegisterElementActionsEvent $event) {
+                    function(RegisterElementActionsEvent $event) {
                         $event->actions[] = BulkEditElementAction::class;
                     }
                 );
@@ -96,7 +95,7 @@ class Plugin extends BasePlugin
 
             if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_ASSETS)) {
                 Event::on(Asset::class, Element::EVENT_REGISTER_ACTIONS,
-                    function (RegisterElementActionsEvent $event) {
+                    function(RegisterElementActionsEvent $event) {
                         $event->actions[] = BulkEditElementAction::class;
                     }
                 );
@@ -104,7 +103,7 @@ class Plugin extends BasePlugin
 
             if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_USERS)) {
                 Event::on(User::class, Element::EVENT_REGISTER_ACTIONS,
-                    function (RegisterElementActionsEvent $event) {
+                    function(RegisterElementActionsEvent $event) {
                         $event->actions[] = BulkEditElementAction::class;
                     }
                 );
@@ -113,7 +112,7 @@ class Plugin extends BasePlugin
             if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_PRODUCTS)) {
                 if (Craft::$app->plugins->isPluginInstalled('commerce') && class_exists(Product::class)) {
                     Event::on(Product::class, Element::EVENT_REGISTER_ACTIONS,
-                        function (RegisterElementActionsEvent $event) {
+                        function(RegisterElementActionsEvent $event) {
                             $event->actions[] = BulkEditElementAction::class;
                         }
                     );

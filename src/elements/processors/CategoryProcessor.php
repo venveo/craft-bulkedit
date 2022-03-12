@@ -14,7 +14,6 @@ use venveo\bulkedit\Plugin;
 
 class CategoryProcessor extends AbstractElementTypeProcessor
 {
-
     /**
      * Gets a unique list of field layouts from a list of element IDs
      * @param $elementIds
