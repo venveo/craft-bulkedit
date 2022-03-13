@@ -16,7 +16,7 @@ use craft\base\Element;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\events\RegisterComponentTypesEvent;
-use craft\records\FieldLayout;
+use craft\models\FieldLayout;
 use Exception;
 use ReflectionClass;
 use ReflectionException;
@@ -119,7 +119,7 @@ class BulkEdit extends Component
         $fields = [];
         /** @var FieldLayout $layout */
         foreach ($layouts as $layout) {
-            $layoutFields = Craft::$app->fields->getFieldsByLayoutId($layout->id);
+            $layoutFields = $layout->getCustomFields();
             /** @var Field $layoutField */
             foreach ($layoutFields as $layoutField) {
                 if (!array_key_exists($layoutField->handle, $fields)) {

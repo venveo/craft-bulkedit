@@ -5,7 +5,7 @@ namespace venveo\bulkedit\elements\processors;
 use Craft;
 use craft\base\Element;
 use craft\elements\Entry;
-use craft\records\FieldLayout;
+use craft\models\FieldLayout;
 use craft\web\User;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\Plugin;
@@ -16,11 +16,11 @@ class EntryProcessor extends AbstractElementTypeProcessor
     /**
      * Gets a unique list of field layouts from a list of element IDs
      * @param $elementIds
-     * @return \yii\db\ActiveRecord[]
+     * @return FieldLayout[]
      */
     public static function getLayoutsFromElementIds($elementIds): array
     {
-        $types = \craft\records\Entry::find()
+        $fieldLayoutIds = \craft\records\Entry::find()
             ->select('entrytypes.fieldLayoutId')
             ->distinct(true)
             ->limit(null)
@@ -28,8 +28,8 @@ class EntryProcessor extends AbstractElementTypeProcessor
             ->leftJoin('{{%entrytypes}} entrytypes', '[[entries.typeId]] = [[entrytypes.id]]')
             ->where(['IN', '[[entries.id]]', $elementIds])
             ->column();
-
-        return FieldLayout::find()->where(['IN', '[[id]]', $types])->all();
+        
+        return Craft::$app->fields->getLayoutsByIds($fieldLayoutIds);
     }
 
     /**

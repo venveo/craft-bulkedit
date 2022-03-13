@@ -37,7 +37,7 @@ class ProductProcessor extends AbstractElementTypeProcessor
             ->all();
         $layoutIds = ArrayHelper::getColumn($layouts, 'fieldLayoutId');
 
-        return FieldLayout::find()->where(['in', 'id', $layoutIds])->all();
+        return Craft::$app->fields->getLayoutsByIds($layoutIds);
     }
 
     /**

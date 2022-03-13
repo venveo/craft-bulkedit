@@ -6,8 +6,8 @@ use Craft;
 use craft\base\Element;
 use craft\elements\Category;
 use craft\helpers\ArrayHelper;
+use craft\models\FieldLayout;
 use craft\records\CategoryGroup;
-use craft\records\FieldLayout;
 use craft\web\User;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\Plugin;
@@ -16,8 +16,9 @@ class CategoryProcessor extends AbstractElementTypeProcessor
 {
     /**
      * Gets a unique list of field layouts from a list of element IDs
+     *
      * @param $elementIds
-     * @return \yii\db\ActiveRecord[]
+     * @return FieldLayout[]
      */
     public static function getLayoutsFromElementIds($elementIds): array
     {
@@ -37,8 +38,8 @@ class CategoryProcessor extends AbstractElementTypeProcessor
             ->asArray()
             ->all();
         $layoutIds = ArrayHelper::getColumn($layouts, 'fieldLayoutId');
-
-        return FieldLayout::find()->where(['in', 'id', $layoutIds])->all();
+        
+        return Craft::$app->fields->getLayoutsByIds($layoutIds);
     }
 
     /**

@@ -5,6 +5,8 @@ namespace venveo\bulkedit\elements\processors;
 use Craft;
 use craft\base\Element;
 use craft\elements\Asset;
+use craft\models\FieldLayout;
+use craft\models\Volume;
 use craft\web\User;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\Plugin;
@@ -14,7 +16,7 @@ class AssetProcessor extends AbstractElementTypeProcessor
     /**
      * Gets a unique list of field layouts from a list of element IDs
      * @param $elementIds
-     * @return mixed[]
+     * @return FieldLayout[]
      */
     public static function getLayoutsFromElementIds($elementIds): array
     {

@@ -1,5 +1,10 @@
 # Bulk Edit Changelog
 
+## 3.0.0 - UNRELEASED
+
+### Changed
+- ElementTypeProcessorInterface::getLayoutsFromElementIds is now expected to return an array of FieldLayout models
+
 ## 2.0.6 - 2021-07-22
 ### Fixed
 - Fixed a bug where fields may not always get the correct source site ID

@@ -3,7 +3,9 @@
 
 namespace venveo\bulkedit\models;
 
+use craft\base\Field;
 use craft\base\Model;
+use craft\models\FieldLayout;
 use craft\records\User;
 use yii\db\ActiveQueryInterface;
 
@@ -19,9 +21,12 @@ use yii\db\ActiveQueryInterface;
  */
 class FieldWrapper extends Model
 {
-    public $field;
+    public Field $field;
 
     public $strategy;
 
-    public $layouts;
+    /**
+     * @var FieldLayout[] 
+     */
+    public array $layouts;
 }
