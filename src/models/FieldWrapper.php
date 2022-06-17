@@ -26,7 +26,7 @@ class FieldWrapper extends Model
     public $strategy;
 
     /**
-     * @var FieldLayout[] 
+     * @var FieldLayout[]
      */
     public array $layouts;
 }

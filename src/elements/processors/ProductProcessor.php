@@ -6,7 +6,6 @@ use craft\base\Element;
 use craft\commerce\records\Product;
 use craft\commerce\records\ProductType;
 use craft\helpers\ArrayHelper;
-use craft\records\FieldLayout;
 use craft\web\User;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\Plugin;
