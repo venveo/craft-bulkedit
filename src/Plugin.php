@@ -44,13 +44,13 @@ class Plugin extends BasePlugin
      */
     public static $plugin;
     public string $schemaVersion = '1.1.0';
+    
 
     public function init()
     {
         parent::init();
         self::$plugin = $this;
 
-        $this->setComponents(['bulkEdit' => BulkEdit::class]);
 
         Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS, function(RegisterUserPermissionsEvent $event) {
             $permissions = [];
@@ -119,5 +119,17 @@ class Plugin extends BasePlugin
                 }
             }
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function config(): array
+    {
+        return [
+            'components' => [
+                'bulkEdit' => ['class' => BulkEdit::class]
+            ],
+        ];
     }
 }
