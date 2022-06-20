@@ -6,7 +6,11 @@ use craft\base\Element;
 use craft\base\Field;
 use craft\fields\Number;
 use venveo\bulkedit\base\AbstractFieldProcessor;
-use venveo\bulkedit\services\BulkEdit;
+use venveo\bulkedit\fields\strategies\Add;
+use venveo\bulkedit\fields\strategies\Divide;
+use venveo\bulkedit\fields\strategies\Multiply;
+use venveo\bulkedit\fields\strategies\Replace;
+use venveo\bulkedit\fields\strategies\Subtract;
 
 class NumberFieldProcessor extends AbstractFieldProcessor
 {
@@ -22,11 +26,11 @@ class NumberFieldProcessor extends AbstractFieldProcessor
     }
 
     /**
-     * Returns the supported strategies for this field type
+     * @inheritDoc
      */
     public static function getSupportedStrategies(): array
     {
-        return [BulkEdit::STRATEGY_REPLACE, BulkEdit::STRATEGY_SUBTRACT, BulkEdit::STRATEGY_ADD, BulkEdit::STRATEGY_MULTIPLY, BulkEdit::STRATEGY_DIVIDE];
+        return [Replace::class, Subtract::class, Add::class, Multiply::class, Divide::class];
     }
 
     public static function performAddition(Element $element, Field $field, $value): void

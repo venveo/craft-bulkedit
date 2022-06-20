@@ -16,6 +16,7 @@ interface FieldProcessorInterface
 
     /**
      * Returns the supported strategies for this field type
+     * @return string[]
      */
     public static function getSupportedStrategies(): array;
 

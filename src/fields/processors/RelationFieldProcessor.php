@@ -6,7 +6,9 @@ use craft\base\Element;
 use craft\base\Field;
 use craft\fields\BaseRelationField;
 use venveo\bulkedit\base\AbstractFieldProcessor;
-use venveo\bulkedit\services\BulkEdit;
+use venveo\bulkedit\fields\strategies\Merge;
+use venveo\bulkedit\fields\strategies\Replace;
+use venveo\bulkedit\fields\strategies\Subtract;
 
 class RelationFieldProcessor extends AbstractFieldProcessor
 {
@@ -22,12 +24,11 @@ class RelationFieldProcessor extends AbstractFieldProcessor
     }
 
     /**
-     * Returns the supported strategies for this field type
-     * @return string[]
+     * @inheritDoc
      */
     public static function getSupportedStrategies(): array
     {
-        return [BulkEdit::STRATEGY_REPLACE, BulkEdit::STRATEGY_SUBTRACT, BulkEdit::STRATEGY_MERGE];
+        return [Replace::class, Subtract::class, Merge::class];
     }
 
     public static function performSubtraction(Element $element, Field $field, $value): void

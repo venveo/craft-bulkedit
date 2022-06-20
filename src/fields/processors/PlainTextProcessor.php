@@ -5,7 +5,7 @@ namespace venveo\bulkedit\fields\processors;
 use Craft;
 use craft\fieldlayoutelements\TextField;
 use venveo\bulkedit\base\AbstractFieldProcessor;
-use venveo\bulkedit\services\BulkEdit;
+use venveo\bulkedit\fields\strategies\Replace;
 
 class PlainTextProcessor extends AbstractFieldProcessor
 {
@@ -23,12 +23,12 @@ class PlainTextProcessor extends AbstractFieldProcessor
         return [TextField::class];
     }
 
+
     /**
-     * Returns the supported strategies for this field type
-     * @return string[]
+     * @inheritDoc
      */
     public static function getSupportedStrategies(): array
     {
-        return [BulkEdit::STRATEGY_REPLACE];
+        return [Replace::class];
     }
 }

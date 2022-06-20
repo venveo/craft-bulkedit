@@ -27,6 +27,7 @@ use Throwable;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
 use venveo\bulkedit\base\AbstractFieldProcessor;
 use venveo\bulkedit\base\ElementTypeProcessorInterface;
+use venveo\bulkedit\base\FieldProcessorInterface;
 use venveo\bulkedit\elements\processors\AssetProcessor;
 use venveo\bulkedit\elements\processors\CategoryProcessor;
 use venveo\bulkedit\elements\processors\EntryProcessor;
@@ -36,11 +37,9 @@ use venveo\bulkedit\fields\processors\NumberFieldProcessor;
 use venveo\bulkedit\fields\processors\PlainTextProcessor;
 use venveo\bulkedit\fields\processors\RelationFieldProcessor;
 use venveo\bulkedit\models\AttributeWrapper;
+use venveo\bulkedit\models\EditContext;
 use venveo\bulkedit\models\FieldWrapper;
 use venveo\bulkedit\queue\jobs\SaveBulkEditJob;
-use venveo\bulkedit\records\EditContext;
-use venveo\bulkedit\records\History;
-use yii\db\ActiveQueryInterface;
 
 /**
  * @author    Venveo
@@ -53,41 +52,6 @@ use yii\db\ActiveQueryInterface;
  */
 class BulkEdit extends Component
 {
-    /**
-     * @var string
-     */
-    public const STRATEGY_REPLACE = 'replace';
-
-    /**
-     * @var string
-     */
-    public const STRATEGY_MERGE = 'merge';
-
-    /**
-     * @var string
-     */
-    public const STRATEGY_SUBTRACT = 'subtract';
-
-    /**
-     * @var string
-     */
-    public const STRATEGY_ADD = 'add';
-
-    /**
-     * @var string
-     */
-    public const STRATEGY_MULTIPLY = 'multiply';
-
-    /**
-     * @var string
-     */
-    public const STRATEGY_DIVIDE = 'divide';
-
-    /**
-     * @var string
-     */
-    public const STRATEGY_OBJECT_TEMPLATE = 'object_template';
-
     /**
      * @var string
      */
@@ -223,59 +187,23 @@ class BulkEdit extends Component
     }
 
     /**
-     * Gets all unique elements from incomplete bulk edit jobs
-     */
-    public function getPendingElementsHistoriesFromContext(EditContext $context): \craft\db\ActiveQuery
-    {
-        return History::find()
-            ->limit(null)
-            ->where(['=', 'contextId', $context->id])
-            ->andWhere(['=', 'status', 'pending'])->indexBy('elementId');
-    }
-
-    /**
-     * Gets all pending bulk edit changes for a particular job
-     *
-     * @param null $elementId
-     */
-    public function getPendingHistoryFromContext(EditContext $context, $elementId = null): ActiveQueryInterface
-    {
-        $query = $context->getHistoryItems()->where(['=', 'status', 'pending']);
-        if ($elementId !== null) {
-            $query->where(['=', 'elementId', $elementId]);
-        }
-
-        return $query;
-    }
-
-    /**
      * Takes an array of history changes for a particular element and saves it to that element.
      *
-     * @param $historyItems
      * @return Element
      * @throws Throwable
      * @throws \yii\base\Exception
      */
-    public function processHistoryItemsForElement($historyItems, Element $element)
+    public function processElementWithContext(Element $element, EditContext $contextModel)
     {
         // We'll process the entire element in a transaction to help avoid problems
         $transaction = Craft::$app->getDb()->beginTransaction();
+        $fieldConfigs = $contextModel->fieldConfigs;
         try {
-            /** @var History $historyItem */
-            foreach ($historyItems as $historyItem) {
-                $fieldHandle = $historyItem->getField()->one()->handle;
-                $newValue = Json::decode($historyItem->newValue);
-                $originalValue = $element->getFieldValue($historyItem->getField()->one()->handle);
-
-                // Store a snapshot of the original field value
-                $historyItem->originalValue = Json::encode($originalValue);
-                $historyItem->status = 'completed';
-
-                $field = Craft::$app->fields->getFieldByHandle($fieldHandle);
-
-                $processor = $this->getFieldProcessor($field, $historyItem->strategy);
-                $processor::processElementField($element, $field, $historyItem->strategy, $newValue);
-                $historyItem->save();
+            foreach ($fieldConfigs as $fieldConfig) {
+                $newValue = Json::decode($fieldConfig->serializedValue);
+                $field = Craft::$app->fields->getFieldById($fieldConfig->fieldId);
+                $processor = $this->getFieldProcessor($field, $fieldConfig->strategy);
+                $processor::processElementField($element, $field, $fieldConfig->strategy, $newValue);
                 Craft::info('Saved history item', __METHOD__);
             }
 
@@ -324,6 +252,7 @@ class BulkEdit extends Component
 
     /**
      * Gets an array of all field processors
+     * @return FieldProcessorInterface[]
      */
     public function getFieldProcessors(): array
     {
@@ -383,30 +312,12 @@ class BulkEdit extends Component
     {
         $processorsList = $this->getProcessorsKeyedByStrategyForField($field);
 
-        $availableStrategies = [];
-        foreach (array_keys($processorsList) as $strategy) {
-            switch ($strategy) {
-                case self::STRATEGY_REPLACE:
-                    $availableStrategies[] = ['value' => self::STRATEGY_REPLACE, 'label' => 'Replace'];
-                    break;
-                case self::STRATEGY_MERGE:
-                    $availableStrategies[] = ['value' => self::STRATEGY_MERGE, 'label' => 'Merge'];
-                    break;
-                case self::STRATEGY_SUBTRACT:
-                    $availableStrategies[] = ['value' => self::STRATEGY_SUBTRACT, 'label' => 'Subtract'];
-                    break;
-                case self::STRATEGY_ADD:
-                    $availableStrategies[] = ['value' => self::STRATEGY_ADD, 'label' => 'Add'];
-                    break;
-                case self::STRATEGY_DIVIDE:
-                    $availableStrategies[] = ['value' => self::STRATEGY_DIVIDE, 'label' => 'Divide'];
-                    break;
-                case self::STRATEGY_MULTIPLY:
-                    $availableStrategies[] = ['value' => self::STRATEGY_MULTIPLY, 'label' => 'Multiply'];
-                    break;
-            }
-        }
-
+        $availableStrategies = array_map(function ($strategy) {
+            return [
+                'value' => $strategy,
+                'label' => $strategy::displayName()
+            ];
+        }, array_keys($processorsList));
 
         return $availableStrategies;
     }
@@ -421,7 +332,6 @@ class BulkEdit extends Component
 
         $processorsByStrategy = [];
 
-        /** @var AbstractFieldProcessor $processor */
         foreach ($processors as $processor) {
             if (!$processor::supportsField($field)) {
                 continue;
@@ -440,19 +350,15 @@ class BulkEdit extends Component
      * @param $elementType
      * @param $siteId
      * @param $elementIds
-     * @param $fieldIds
-     * @param $keyedFieldValues
-     * @param $fieldStrategies
+     * @param $fieldConfigs
      * @throws ReflectionException
-     * @throws \yii\db\Exception
+     * @throws Throwable
      */
     public function saveContext(
         $elementType,
         $siteId,
         $elementIds,
-        $fieldIds,
-        $keyedFieldValues,
-        $fieldStrategies
+        $fieldConfigs
     ): void {
         /** @var AbstractElementTypeProcessor $processor */
         $processor = $this->getElementTypeProcessor($elementType);
@@ -461,38 +367,15 @@ class BulkEdit extends Component
             throw new Exception('Missing permissions');
         }
 
-        $context = new EditContext();
-        $context->ownerId = Craft::$app->getUser()->getIdentity()->id;
-        $context->siteId = $siteId;
-        $context->elementType = $elementType;
-        $context->elementIds = Json::encode($elementIds);
-        $context->fieldIds = Json::encode($fieldIds);
-        $context->save();
-
-        $rows = [];
-        foreach ($elementIds as $elementId) {
-            foreach ($fieldIds as $fieldId) {
-                $strategy = $fieldStrategies[$fieldId] ?? self::STRATEGY_REPLACE;
-
-                $rows[] = [
-                    'pending',
-                    $context->id,
-                    (int)$elementId,
-                    (int)$fieldId,
-                    (int)$siteId,
-                    '[]',
-                    Json::encode($keyedFieldValues[$fieldId] ?? ''),
-                    $strategy,
-                ];
-            }
-        }
-
-        $cols = ['status', 'contextId', 'elementId', 'fieldId', 'siteId', 'originalValue', 'newValue', 'strategy'];
-        Craft::$app->db->createCommand()->batchInsert(History::tableName(), $cols, $rows)->execute();
-
-
+        $contextModel = new EditContext();
+        $contextModel->fieldConfigs = $fieldConfigs;
+        $contextModel->elementIds = $elementIds;
+        $contextModel->siteId = $siteId;
+        $contextModel->ownerId = Craft::$app->getUser()->getIdentity()->id;
+        $contextModel->total = count($elementIds);
+        
         $job = new SaveBulkEditJob([
-            'context' => $context,
+            'context' => $contextModel,
         ]);
         Craft::$app->getQueue()->push($job);
     }

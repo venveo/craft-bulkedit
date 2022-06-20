@@ -7,6 +7,10 @@
 
 ### Changed
 - Bulk Edit now requires Craft 4
+- Plugin no longer requires db tables - all data is now stored in the queue job.
+- Refactor 
+- Field strategies are now represented as classes implementing FieldStrategyInterface
+- 
 
 ## 2.0.6 - 2021-07-22
 ### Fixed

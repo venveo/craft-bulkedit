@@ -46,6 +46,7 @@
                     {% if not bulkedit.isFieldSupported(field) %}
                         {% set fieldUnsupported = true %}
                     {% endif %}
+                    {{ hiddenInput('fields['~field.id~'][type]', 'CustomField') }}
                     <tr>
                         <td>
             <span>

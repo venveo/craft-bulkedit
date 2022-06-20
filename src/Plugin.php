@@ -43,7 +43,7 @@ class Plugin extends BasePlugin
      * @var Plugin
      */
     public static $plugin;
-    public string $schemaVersion = '1.1.0';
+    public string $schemaVersion = '4.0.0';
     
 
     public function init()

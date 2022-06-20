@@ -13,6 +13,7 @@ namespace venveo\bulkedit\controllers;
 use Craft;
 use craft\controllers\ElementIndexesController;
 use craft\errors\SiteNotFoundException;
+use craft\helpers\Json;
 use craft\models\Site;
 use craft\records\Field;
 use craft\web\Response;
@@ -21,6 +22,8 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use venveo\bulkedit\base\ElementTypeProcessorInterface;
+use venveo\bulkedit\enums\FieldType;
+use venveo\bulkedit\models\FieldConfig;
 use venveo\bulkedit\Plugin;
 use yii\web\BadRequestHttpException;
 
@@ -168,45 +171,39 @@ class BulkEditController extends ElementIndexesController
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+        // Converts the url encoded form values from the json payload to the expected format.
         $values = [];
         parse_str(Craft::$app->getRequest()->getRequiredParam('formValues'), $values);
-        $fieldConfig = Craft::$app->getRequest()->getRequiredParam('fieldConfig');
 
-        $fieldStrategies = [];
-        foreach ($fieldConfig as $field) {
-            $fieldStrategies[$field['id']] = $field['strategy'];
+        $fieldConfigData = Craft::$app->getRequest()->getRequiredParam('fieldConfig');
+
+        $fieldConfigs = [];
+        foreach ($fieldConfigData as $fieldConfigDatum) {
+            if (!$fieldConfigDatum['enabled']) {
+                continue;
+            }
+            $fieldConfig = new FieldConfig();
+            $fieldConfig->strategy = $fieldConfigDatum['strategy'];
+            $fieldConfig->type = $fieldConfigDatum['type'];
+            if ($fieldConfig->type === FieldType::CustomField) {
+                $fieldConfig->fieldId = (int)$fieldConfigDatum['id'];
+                $fieldConfig->handle = Craft::$app->fields->getFieldById($fieldConfig->fieldId)->handle;
+                $fieldConfig->serializedValue = Json::encode($values[$fieldConfig->handle]);
+            }
+            $fieldConfigs[] = $fieldConfig;
         }
 
-        $fieldIds = array_keys($fieldStrategies);
-        $fields = Field::findAll($fieldIds);
-
-        $keyedFieldValues = [];
-        foreach ($values as $handle => $value) {
-            foreach ($fields as $field) {
-                if ($field->handle === $handle) {
-                    $fieldId = $field->id;
-                }
-            }
-
-            if (!isset($fieldId)) {
-                throw new Exception('Failed to locate field');
-            }
-
-            $keyedFieldValues[$fieldId] = $value;
-        }
 
         $elementIds = $this->getElementQuery()->limit(null)->ids();
 
         try {
-            Plugin::$plugin->bulkEdit->saveContext($this->elementType, $this->site->id, $elementIds, $fieldIds,
-                $keyedFieldValues,
-                $fieldStrategies);
+            Plugin::$plugin->bulkEdit->saveContext($this->elementType, $this->site->id, $elementIds, $fieldConfigs);
 
             return $this->asJson([
                 'success' => true,
             ]);
         } catch (Exception $e) {
-//            throw $e;
+            Craft::error('Failed to save context', $e->getTraceAsString(), __METHOD__);
             return $this->asFailure('Failed to save context');
         }
     }
