@@ -41,16 +41,15 @@ class BulkEditElementAction extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml(): null|string
+    public function getTriggerHtml(): ?string
     {
         $type = Json::encode(static::class);
 
 
-        $js = <<<EOD
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
-        type: {$type},
+        $js = <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
+        type: $type,
         batch: true,
         validateSelection: function(\$selectedItems)
         {
@@ -58,15 +57,11 @@ class BulkEditElementAction extends ElementAction
         },
         activate: function(\$selectedItems)
         {
-            var settings = {};
-            var elementIds = $(\$selectedItems).map(function(){
-                return $(this).data('id');
-            }).get();
-            var modal = new Craft.BulkEditModal(elementIds, settings);
+            var modal = new Craft.BulkEditModal(Craft.elementIndex, {});
         }
     });
 })();
-EOD;
+JS;
 
 
         $view = Craft::$app->getView();

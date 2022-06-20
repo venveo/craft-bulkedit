@@ -1,9 +1,12 @@
 # Bulk Edit Changelog
 
-## 3.0.0 - UNRELEASED
+## 4.0.0 - UNRELEASED
+
+### Added
+- "Select All" support
 
 ### Changed
-- ElementTypeProcessorInterface::getLayoutsFromElementIds is now expected to return an array of FieldLayout models
+- Bulk Edit now requires Craft 4
 
 ## 2.0.6 - 2021-07-22
 ### Fixed

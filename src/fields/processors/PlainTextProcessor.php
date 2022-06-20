@@ -3,6 +3,7 @@
 namespace venveo\bulkedit\fields\processors;
 
 use Craft;
+use craft\fieldlayoutelements\TextField;
 use venveo\bulkedit\base\AbstractFieldProcessor;
 use venveo\bulkedit\services\BulkEdit;
 
@@ -15,6 +16,11 @@ class PlainTextProcessor extends AbstractFieldProcessor
     public static function getSupportedFields(): array
     {
         return Craft::$app->fields->getAllFieldTypes();
+    }
+
+    public static function getSupportedNativeFields(): array
+    {
+        return [TextField::class];
     }
 
     /**

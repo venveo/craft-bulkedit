@@ -11,6 +11,8 @@ interface FieldProcessorInterface
      * An array of class names for supported fields
      */
     public static function getSupportedFields(): array;
+    
+    public static function getSupportedNativeFields(): array;
 
     /**
      * Returns the supported strategies for this field type

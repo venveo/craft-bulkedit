@@ -21,6 +21,13 @@ abstract class AbstractFieldProcessor implements FieldProcessorInterface
         return false;
     }
 
+    /**
+     * @return array
+     */
+    public static function getSupportedNativeFields(): array {
+        return [];
+    }
+
     public static function processElementField(Element $element, Field $field, $strategy, $newValue)
     {
         switch ($strategy) {

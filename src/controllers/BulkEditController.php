@@ -11,11 +11,10 @@
 namespace venveo\bulkedit\controllers;
 
 use Craft;
+use craft\controllers\ElementIndexesController;
 use craft\errors\SiteNotFoundException;
-use craft\helpers\ElementHelper;
-use craft\records\Element;
+use craft\models\Site;
 use craft\records\Field;
-use craft\web\Controller;
 use craft\web\Response;
 use Exception;
 use Twig\Error\LoaderError;
@@ -23,7 +22,6 @@ use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use venveo\bulkedit\base\ElementTypeProcessorInterface;
 use venveo\bulkedit\Plugin;
-use venveo\bulkedit\services\BulkEdit as BulkEditService;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -31,8 +29,34 @@ use yii\web\BadRequestHttpException;
  * @package   BulkEdit
  * @since     1.0.0
  */
-class BulkEditController extends Controller
+class BulkEditController extends ElementIndexesController
 {
+    public bool $isSelectingAll = false;
+
+    public ?Site $site = null;
+
+    public function beforeAction($action): bool
+    {
+        parent::beforeAction($action);
+        $this->isSelectingAll = $this->isSelectingAll();
+        $this->site = $this->site();
+        if (!$this->site) {
+            throw new SiteNotFoundException('Site does not exist');
+        }
+        return true;
+    }
+
+    public function isSelectingAll(): bool
+    {
+        return $this->request->getParam('selectAll', false);
+    }
+
+    public function site(): Site
+    {
+        $siteId = $this->request->getParam('siteId', Craft::$app->sites->currentSite->id);
+        return Craft::$app->sites->getSiteById($siteId);
+    }
+
     /**
      * Return the file preview for an Asset.
      *
@@ -47,59 +71,26 @@ class BulkEditController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
-        $requestId = Craft::$app->getRequest()->getRequiredParam('requestId');
-        $viewParams = Craft::$app->getRequest()->getRequiredParam('viewParams');
-
-        $elementType = $viewParams['elementType'];
-        $siteId = $viewParams['criteria']['siteId'];
-        $site = Craft::$app->sites->getSiteById($siteId);
-
-//        $sourceKey = $viewParams['source'];
-//        $criteria = $viewParams['criteria'];
-//
-//        $query = $elementType::find();
-//        $source = ElementHelper::findSource($elementType, $sourceKey, 'index');
-//
-//
-//        if ($source === null) {
-//            throw new BadRequestHttpException('Invalid source key: ' . $sourceKey);
-//        }
-//
-//        // Does the source specify any criteria attributes?
-//        if (isset($source['criteria'])) {
-//            Craft::configure($query, $source['criteria']);
-//        }
-//
-//        // Override with the request's params
-//        if ($criteria !== null) {
-//            if (isset($criteria['trashed'])) {
-//                $criteria['trashed'] = (bool)$criteria['trashed'];
-//            }
-//            Craft::configure($query, $criteria);
-//        }
-
-        /** @var BulkEditService $service */
-        $service = Plugin::$plugin->bulkEdit;
-        $fields = $service->getFieldWrappers($elementIds, $elementType);
-        $attributes = $service->getAttributeWrappers($elementType);
+        $service = Plugin::getInstance()->bulkEdit;
+        $customFields = $service->getFieldWrappersForElementQuery($this->getElementQuery());
+//        $attributes = $service->getAttributeWrappersForElementQuery($this->getElementQuery());
+        $attributes = [];
 
         $view = Craft::$app->getView();
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_fields', [
-            'fieldWrappers' => $fields,
-            'attributeWrappers' => $attributes,
-            'elementType' => $elementType,
+            'fieldWrappers' => $customFields,
+            'attributeWrappers' => [],
             'bulkedit' => $service,
-            'elementIds' => $elementIds,
-            'site' => $site,
+            'selectedTotal' => $this->getElementQuery()->count(),
+            'selectAllTotal' => $this->getElementQuery()->id(null)->count(),
+            'selectAllChecked' => $this->isSelectingAll,
+            'site' => $this->site,
         ]);
 
         $responseData = [
             'success' => true,
             'modalHtml' => $modalHtml,
-            'requestId' => $requestId,
-            'elementIds' => $elementIds,
-            'siteId' => $site->id,
+            'siteId' => $this->site->id,
         ];
         $responseData['headHtml'] = $view->getHeadHtml();
         $responseData['footHtml'] = $view->getBodyHtml();
@@ -113,39 +104,15 @@ class BulkEditController extends Controller
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function actionGetEditScreen(): \yii\web\Response
+    public function actionGetEditScreen(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-
-        $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
-        $requestId = Craft::$app->getRequest()->getRequiredParam('requestId');
-        $elementType = Craft::$app->getRequest()->getRequiredParam('elementType');
-        $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
-        $fields = Craft::$app->getRequest()->getRequiredParam('fields');
-
-        Craft::$app->getRequest()->getParam('viewParams');
+        $service = Plugin::getInstance()->bulkEdit;
+        $fields = Craft::$app->getRequest()->getRequiredParam('fieldConfig');
         $enabledFields = array_filter($fields, fn($field) => $field['enabled']);
-
-
-        $site = Craft::$app->getSites()->getSiteById($siteId);
-        if (!$site) {
-            throw new Exception('Site does not exist');
-        }
-
-
         $fields = Field::findAll(array_keys($enabledFields));
-        if (count($fields) !== count((array) $enabledFields)) {
-            throw new Exception('Could not find all fields requested');
-        }
-
-        $elementIds = explode(',', $elementIds);
-        $elements = Element::findAll($elementIds);
-        if (count($elements) !== count($elementIds)) {
-            throw new Exception('Could not find all elements requested');
-        }
-
         $fieldModels = [];
         /** @var Field $field */
         foreach ($fields as $field) {
@@ -158,9 +125,10 @@ class BulkEditController extends Controller
         $view = Craft::$app->getView();
 
         /** @var ElementTypeProcessorInterface $processor */
-        $processor = Plugin::getInstance()->bulkEdit->getElementTypeProcessor($elementType);
+        $processor = Plugin::getInstance()->bulkEdit->getElementTypeProcessor($this->elementType);
+        $elementIds = [$this->getElementQuery()->one()->id];
         $elementPlaceholder = $processor::getMockElement($elementIds, [
-            'siteId' => $siteId,
+            'siteId' => $this->site->id,
         ]);
 
         // We've gotta register any asset bundles - this won't actually be rendered
@@ -175,17 +143,16 @@ class BulkEditController extends Controller
 
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_edit', [
             'fields' => $fieldModels,
-            'elementType' => $elementType,
+            'elementType' => $this->elementType,
             'elementPlaceholder' => $elementPlaceholder,
-            'elementIds' => $elementIds,
+            'totalElements' => $this->elementQuery()->count(),
             'fieldData' => $enabledFields,
-            'site' => $site,
+            'site' => $this->site,
         ]);
         $responseData = [
             'success' => true,
             'modalHtml' => $modalHtml,
-            'requestId' => $requestId,
-            'siteId' => $site->id,
+            'siteId' => $this->site->id,
         ];
         $responseData['headHtml'] = $view->getHeadHtml();
         $responseData['footHtml'] = $view->getBodyHtml();
@@ -201,21 +168,17 @@ class BulkEditController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
-
-        $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
-        $elementType = Craft::$app->getRequest()->getRequiredParam('elementType');
-        $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
-        $fieldMeta = array_values(Craft::$app->getRequest()->getRequiredParam('fieldMeta'));
+        $values = [];
+        parse_str(Craft::$app->getRequest()->getRequiredParam('formValues'), $values);
+        $fieldConfig = Craft::$app->getRequest()->getRequiredParam('fieldConfig');
 
         $fieldStrategies = [];
-        foreach ($fieldMeta as $field) {
+        foreach ($fieldConfig as $field) {
             $fieldStrategies[$field['id']] = $field['strategy'];
         }
 
         $fieldIds = array_keys($fieldStrategies);
         $fields = Field::findAll($fieldIds);
-
-        $values = Craft::$app->getRequest()->getBodyParam('fields', []);
 
         $keyedFieldValues = [];
         foreach ($values as $handle => $value) {
@@ -232,16 +195,19 @@ class BulkEditController extends Controller
             $keyedFieldValues[$fieldId] = $value;
         }
 
-        $elementIds = explode(',', $elementIds);
+        $elementIds = $this->getElementQuery()->limit(null)->ids();
 
         try {
-            Plugin::$plugin->bulkEdit->saveContext($elementType, $siteId, $elementIds, $fieldIds, $keyedFieldValues, $fieldStrategies);
+            Plugin::$plugin->bulkEdit->saveContext($this->elementType, $this->site->id, $elementIds, $fieldIds,
+                $keyedFieldValues,
+                $fieldStrategies);
 
             return $this->asJson([
                 'success' => true,
             ]);
-        } catch (Exception) {
-            return $this->asErrorJson('Failed to save context');
+        } catch (Exception $e) {
+//            throw $e;
+            return $this->asFailure('Failed to save context');
         }
     }
 }

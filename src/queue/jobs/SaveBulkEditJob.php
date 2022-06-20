@@ -69,7 +69,7 @@ class SaveBulkEditJob extends BaseJob
                     Plugin::$plugin->bulkEdit->processHistoryItemsForElement($history, $element);
                 } catch (\Exception $exception) {
                     Craft::error('Could not save element in bulk edit job... ' . $exception->getMessage(), __METHOD__);
-                    throw new Exception('Couldn’t save element ' . $element->id . ' (' . $element::class . ')');
+                    throw $exception;
                 } catch (Throwable $throwable) {
                     throw $throwable;
                 }

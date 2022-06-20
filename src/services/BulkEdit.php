@@ -15,7 +15,10 @@ use craft\base\Component;
 use craft\base\Element;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\elements\db\ElementQueryInterface;
 use craft\events\RegisterComponentTypesEvent;
+use craft\fieldlayoutelements\BaseField;
+use craft\helpers\Json;
 use craft\models\FieldLayout;
 use Exception;
 use ReflectionClass;
@@ -43,6 +46,10 @@ use yii\db\ActiveQueryInterface;
  * @author    Venveo
  * @package   BulkEdit
  * @since     1.0.0
+ *
+ * @property-read string[] $elementTypeProcessors
+ * @property-read string[] $fieldProcessors
+ * @property-read mixed[] $supportedFieldTypes
  */
 class BulkEdit extends Component
 {
@@ -105,16 +112,21 @@ class BulkEdit extends Component
      * @throws ReflectionException
      * @throws Exception
      */
-    public function getFieldWrappers($elementIds, $elementType): array
+    public function getFieldWrappersForElementQuery(ElementQueryInterface $query): array
     {
+        $elementType = $query->elementType;
         // Works for entries
         /** @var ElementTypeProcessorInterface $processor */
         $processor = $this->getElementTypeProcessor($elementType);
         if (!$processor) {
             throw new Exception('Unable to process element type');
         }
-
-        $layouts = $processor::getLayoutsFromElementIds($elementIds);
+        if ($query->id) {
+            $elementIds = is_array($query->id) ? $query->id : [$query->id];
+            $layouts = $processor::getLayoutsFromElementIds($elementIds);
+        } else {
+            $layouts = Craft::$app->getFields()->getLayoutsByType($elementType);
+        }
 
         $fields = [];
         /** @var FieldLayout $layout */
@@ -139,8 +151,9 @@ class BulkEdit extends Component
     /**
      * @return \venveo\bulkedit\models\AttributeWrapper[]
      */
-    public function getAttributeWrappers($elementType): array
+    public function getAttributeWrappersForElementQuery(ElementQueryInterface $query): array
     {
+        $elementType = $query->elementType;
 
         /** @var ElementTypeProcessorInterface $processor */
         $processor = $this->getElementTypeProcessor($elementType);
@@ -250,12 +263,12 @@ class BulkEdit extends Component
         try {
             /** @var History $historyItem */
             foreach ($historyItems as $historyItem) {
-                $fieldHandle = $historyItem->getField()->handle;
-                $newValue = \GuzzleHttp\json_decode($historyItem->newValue, true);
-                $originalValue = $element->getFieldValue($historyItem->getField()->handle);
+                $fieldHandle = $historyItem->getField()->one()->handle;
+                $newValue = Json::decode($historyItem->newValue);
+                $originalValue = $element->getFieldValue($historyItem->getField()->one()->handle);
 
                 // Store a snapshot of the original field value
-                $historyItem->originalValue = \GuzzleHttp\json_encode($originalValue);
+                $historyItem->originalValue = Json::encode($originalValue);
                 $historyItem->status = 'completed';
 
                 $field = Craft::$app->fields->getFieldByHandle($fieldHandle);
@@ -332,7 +345,7 @@ class BulkEdit extends Component
         return $processors;
     }
 
-    public function isFieldSupported(FieldInterface $field, $strategy = null): bool
+    public function isFieldSupported(FieldInterface|BaseField $field, $strategy = null): bool
     {
         $supportedFields = $this->getSupportedFieldTypes();
 
@@ -433,8 +446,14 @@ class BulkEdit extends Component
      * @throws ReflectionException
      * @throws \yii\db\Exception
      */
-    public function saveContext($elementType, $siteId, $elementIds, $fieldIds, $keyedFieldValues, $fieldStrategies): void
-    {
+    public function saveContext(
+        $elementType,
+        $siteId,
+        $elementIds,
+        $fieldIds,
+        $keyedFieldValues,
+        $fieldStrategies
+    ): void {
         /** @var AbstractElementTypeProcessor $processor */
         $processor = $this->getElementTypeProcessor($elementType);
 
@@ -446,8 +465,8 @@ class BulkEdit extends Component
         $context->ownerId = Craft::$app->getUser()->getIdentity()->id;
         $context->siteId = $siteId;
         $context->elementType = $elementType;
-        $context->elementIds = \GuzzleHttp\json_encode($elementIds);
-        $context->fieldIds = \GuzzleHttp\json_encode($fieldIds);
+        $context->elementIds = Json::encode($elementIds);
+        $context->fieldIds = Json::encode($fieldIds);
         $context->save();
 
         $rows = [];
@@ -462,7 +481,7 @@ class BulkEdit extends Component
                     (int)$fieldId,
                     (int)$siteId,
                     '[]',
-                    \GuzzleHttp\json_encode($keyedFieldValues[$fieldId]),
+                    Json::encode($keyedFieldValues[$fieldId] ?? ''),
                     $strategy,
                 ];
             }

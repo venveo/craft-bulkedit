@@ -2,26 +2,21 @@
 
 <div class="bulkedit field-edit-modal">
   <form id="bulk-edit-values-modal">
-  <input type="hidden" name="elementIds" value="{{ elementIds|join(',') }}">
-  <input type="hidden" name="elementType" value="{{ elementType }}">
-  <input type="hidden" name="siteId" value="{{ site.id }}">
   {% for field in fields %}
-    <input type="hidden" name="fieldMeta[{{ loop.index0 }}][id]" value="{{ field.id }}">
-    <input type="hidden" name="fieldMeta[{{ loop.index0 }}][strategy]" value="{{ fieldData[field.id].strategy }}">
     <div class="pane">
-      {% namespace 'fields' %}
+{#      {% namespace 'fields' %}#}
         {% include "_includes/field" with {
           field:    field,
           required: false,
           element: elementPlaceholder,
           siteId: site.id
         } only %}
-      {% endnamespace %}
+{#      {% endnamespace %}#}
     </div>
     <div class="field-edit-modal-bar">
       <div class="buttons right">
         <div class="btn" id="field-edit-cancel">{{"Cancel"|t('venveo-bulk-edit')}}</div>
-        <input type="button" value="Save {{ elementIds|length }} Elements" class="btn submit"></div>
+        <input type="button" value="Save {{ totalElements }} Elements" class="btn submit"></div>
     </div>
      {% else %}
     <p>{{"It doesn't look like there are any fields that support bulk editing on these elements."|t('venveo-bulk-edit')}}</p>

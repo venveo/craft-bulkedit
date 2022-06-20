@@ -2,17 +2,20 @@
 
 <div class="bulkedit field-edit-modal">
     <h2>{{ "Select Fields"|t('venveo-bulk-edit') }}</h2>
-    <p>Editing <strong>{{ elementIds|length }}</strong> elements on site
+    <p>Editing <strong>{{ selectedTotal }}</strong> elements on site
         <strong>{{ site.name }} ({{ site.language }})</strong></p>
     {% if fieldWrappers|length or attributeWrappers|length %}
-    <form action="" method="post" accept-charset="UTF-8">
-        {{ csrfInput() }}
-        {{ actionInput('bulkedit/bulk-edit/edit') }}
-        <input type="hidden" name="elementIds" value="{{ elementIds|join(',') }}">
-        <input type="hidden" name="siteId" value="{{ site.id }}">
-        <input type="hidden" name="elementType" value="{{ elementType }}">
 
-        {% if fieldWrappers|length %}
+    <div style="margin-bottom: 10px;">
+        {{ forms.checkbox({
+            id: 'bulk-edit-select-all',
+            checked: selectAllChecked,
+            label: 'Select all ' ~ selectAllTotal ~ ' elements matching current filters',
+            name: 'selectAll',
+        }) }}
+    </div>
+    <form action="" method="post" accept-charset="UTF-8" id="select-fields-form">
+    {% if fieldWrappers|length %}
             <table class="data fullwidth" id="fields-table">
                 <thead>
                 <th scope="col" class="col-header">
