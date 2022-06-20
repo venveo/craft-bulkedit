@@ -166,15 +166,11 @@ Craft.BulkEditModal = Garnish.Modal.extend({
                     formValues: (new URLSearchParams(formValues)).toString()
                 }
             }).then(() => {
-
+                    Craft.cp.trackJobProgress(false, true);
+                    Craft.cp.runQueue();
             }).finally(() => {
                 this.hide();
             })
-            // Craft.postActionRequest('venveo-bulk-edit/bulk-edit/save-context', formValues, function(response) {
-            //     this.hide();
-            //     Craft.cp.trackJobProgress(false, true);
-            //     Craft.cp.runQueue();
-            // }.bind(this));
         },
 
         _handleFieldSelectSubmit: function(e) {
