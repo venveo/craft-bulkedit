@@ -4,7 +4,7 @@
     <h2>{{ "Select Fields"|t('venveo-bulk-edit') }}</h2>
     <p>Editing <strong>{{ selectedTotal }}</strong> elements on site
         <strong>{{ site.name }} ({{ site.language }})</strong></p>
-    {% if fieldWrappers|length or attributeWrappers|length %}
+    {% if fieldWrappers|length %}
 
     <div style="margin-bottom: 10px;">
         {{ forms.checkbox({
@@ -83,51 +83,6 @@
         {% endif %}
         {% else %}
             <p>These elements have no associated fields.</p>
-        {% endif %}
-
-        {% if attributeWrappers|length %}
-            <table class="data fullwidth" id="attributes-table">
-                <thead>
-                <th scope="col" class="col-header">
-        <span class="heading-text">
-            Attribute
-        </span>
-                </th>
-                <th scope="col" class="col-header">
-        <span class="heading-text">
-            Edit
-        </span>
-                </th>
-                <th scope="col" class="col-header">
-        <span class="heading-text">
-            Strategy
-        </span>
-                </th>
-                </thead>
-                {# fieldWrapper  #}
-                {% for attributeWrapper in attributeWrappers %}
-                    <tr>
-                        <td>
-            <span>
-                {{ attributeWrapper.name|t('site') }}
-            </span>
-                        </td>
-                        <td>
-            <span>
-                {{ forms.lightswitchField({
-                    id: 'attributeEnabled-'~attributeWrapper.handle,
-                    name: 'attributes['~attributeWrapper.handle~'][enabled]',
-                    on: false,
-                    value: true,
-                }) }}
-            </span>
-                        </td>
-                        <td>
-                            <span></span>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </table>
         {% endif %}
         <div class="field-edit-modal-bar">
             <div class="buttons right">

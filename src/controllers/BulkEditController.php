@@ -81,14 +81,11 @@ class BulkEditController extends ElementIndexesController
 
         $service = Plugin::getInstance()->bulkEdit;
         $customFields = $service->getFieldWrappersForElementQuery($this->getElementQuery());
-//        $attributes = $service->getAttributeWrappersForElementQuery($this->getElementQuery());
-        $attributes = [];
 
         $view = Craft::$app->getView();
         $view->setNamespace($namespace);
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_fields', [
             'fieldWrappers' => $customFields,
-            'attributeWrappers' => [],
             'bulkedit' => $service,
             'selectedTotal' => $this->getElementQuery()->count(),
             'selectAllTotal' => $this->getElementQuery()->id(null)->count(),
