@@ -97,7 +97,6 @@ Craft.BulkEditModal = Garnish.Modal.extend({
                 }
             })
                 .then((response) => {
-                    console.log('data', response.data)
                     const data = response.data
                     this.$container.append(data.modalHtml);
                     Craft.initUiElements(this.$container);
@@ -179,7 +178,6 @@ Craft.BulkEditModal = Garnish.Modal.extend({
             const formDataObject = this._getFieldConfig(formData)
             this.fieldConfig = formDataObject
             this.$container.find('.field-edit-modal').remove();
-            this._initSpinner();
             this.loadFieldEditor(formDataObject);
         },
 
