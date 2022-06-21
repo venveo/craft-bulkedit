@@ -73,7 +73,10 @@ class Plugin extends BasePlugin
                 ];
             }
 
-            $event->permissions[Craft::t('venveo-bulk-edit', 'Bulk Edit')] = $permissions;
+            $event->permissions[] = [
+                'heading' => Craft::t('venveo-bulk-edit', 'Bulk Edit'),
+                'permissions' => $permissions
+            ];
         });
 
         if (Craft::$app->request->isCpRequest) {
