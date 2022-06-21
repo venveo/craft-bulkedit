@@ -15,6 +15,7 @@ use craft\controllers\ElementIndexesController;
 use craft\errors\SiteNotFoundException;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
@@ -76,6 +77,7 @@ class BulkEditController extends ElementIndexesController
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+        $namespace = StringHelper::randomString(10);
 
         $service = Plugin::getInstance()->bulkEdit;
         $customFields = $service->getFieldWrappersForElementQuery($this->getElementQuery());
@@ -83,6 +85,7 @@ class BulkEditController extends ElementIndexesController
         $attributes = [];
 
         $view = Craft::$app->getView();
+        $view->setNamespace($namespace);
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_fields', [
             'fieldWrappers' => $customFields,
             'attributeWrappers' => [],
@@ -97,6 +100,7 @@ class BulkEditController extends ElementIndexesController
             'success' => true,
             'modalHtml' => $modalHtml,
             'siteId' => $this->site->id,
+            'namespace' => $namespace,
         ];
         $responseData['headHtml'] = $view->getHeadHtml();
         $responseData['footHtml'] = $view->getBodyHtml();
@@ -115,7 +119,8 @@ class BulkEditController extends ElementIndexesController
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $fields = Craft::$app->getRequest()->getRequiredParam('fieldConfig');
+        $fields = $this->request->getRequiredParam('fieldConfig');
+        $namespace = $this->request->getRequiredParam('namespace');
         $enabledFields = array_filter($fields, fn($field) => $field['enabled']);
         $fields = Field::findAll(array_keys($enabledFields));
         $fieldModels = [];
@@ -150,19 +155,10 @@ class BulkEditController extends ElementIndexesController
         }
         $fieldLayoutTab->setElements($fieldLayoutElements);
         $fieldLayout->setTabs([$fieldLayoutTab]);
-        $fieldLayoutForm = $fieldLayout->createForm($elementPlaceholder, false, ['namespace' => 'asdf']);
+        $fieldLayoutForm = $fieldLayout->createForm($elementPlaceholder, false, [
+            'namespace' => $namespace
+        ]);
         $html = $fieldLayoutForm->render();
-
-
-        // We've gotta register any asset bundles - this won't actually be rendered
-//        foreach ($fieldModels as $fieldModel) {
-//            $view->renderPageTemplate('_includes/field', [
-//                'field' => $fieldModel,
-//                'static' => true,
-//                'element' => $elementPlaceholder,
-//                'required' => false,
-//            ]);
-//        }
 
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_edit', [
             'totalElements' => $this->elementQuery()->count(),
@@ -187,13 +183,14 @@ class BulkEditController extends ElementIndexesController
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+        $namespace = $this->request->getRequiredParam('namespace');
         // Converts the url encoded form values from the json payload to the expected format.
         $namespacedValues = [];
 
-        parse_str(Craft::$app->getRequest()->getRequiredParam('formValues'), $namespacedValues);
-        $fieldValues = $namespacedValues['fields'];
+        parse_str($this->request->getRequiredParam('formValues'), $namespacedValues);
+        $fieldValues = $namespacedValues[$namespace]['fields'];
 
-        $fieldConfigData = Craft::$app->getRequest()->getRequiredParam('fieldConfig');
+        $fieldConfigData = $this->request->getRequiredParam('fieldConfig');
 
         $fieldConfigs = [];
         foreach ($fieldConfigData as $fieldConfigDatum) {

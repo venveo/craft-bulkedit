@@ -1,23 +1,25 @@
 {% import '_includes/forms' as forms %}
 
 <div class="bulkedit field-edit-modal">
-  <form id="bulk-edit-values-modal">
-      {% if fieldHtml %}
-    <div class="pane">
-        {{ fieldHtml|raw }}
-    </div>
-    <div class="field-edit-modal-bar">
-      <div class="buttons right">
-        <div class="btn" id="field-edit-cancel">{{"Cancel"|t('venveo-bulk-edit')}}</div>
-        <input type="button" value="Save {{ totalElements }} Elements" class="btn submit"></div>
-    </div>
-     {% else %}
-    <p>{{"It doesn't look like there are any fields that support bulk editing on these elements."|t('venveo-bulk-edit')}}</p>
-       <div class="field-edit-modal-bar">
-         <div class="buttons right">
-           <div class="btn" id="field-edit-cancel">{{"Cancel"|t('venveo-bulk-edit')}}</div>
-       </div>
-       </div>
-  {% endif %}
-  </form>
+    <form id="bulk-edit-values-modal">
+        {% if fieldHtml %}
+            {% namespace namespace ?? null %}
+                <div class="pane">
+                    {{ fieldHtml|raw }}
+                </div>
+            {% endnamespace %}
+            <div class="field-edit-modal-bar">
+                <div class="buttons right">
+                    <div class="btn" id="field-edit-cancel">{{ "Cancel"|t('venveo-bulk-edit') }}</div>
+                    <input type="button" value="Save {{ totalElements }} Elements" class="btn submit"></div>
+            </div>
+        {% else %}
+            <p>{{ "It doesn't look like there are any fields that support bulk editing on these elements."|t('venveo-bulk-edit') }}</p>
+            <div class="field-edit-modal-bar">
+                <div class="buttons right">
+                    <div class="btn" id="field-edit-cancel">{{ "Cancel"|t('venveo-bulk-edit') }}</div>
+                </div>
+            </div>
+        {% endif %}
+    </form>
 </div>

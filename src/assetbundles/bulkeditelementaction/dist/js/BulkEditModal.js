@@ -20,6 +20,8 @@ Craft.BulkEditModal = Garnish.Modal.extend({
         type: null,
         requestId: 0,
 
+        namespace: null,
+
         /**
          * Initialize the preview file modal.
          * @returns {*|void}
@@ -76,6 +78,7 @@ Craft.BulkEditModal = Garnish.Modal.extend({
                 .then((response) => {
                     const data = response.data
                     this.$container.append(data.modalHtml);
+                    this.namespace = data.namespace
                     Craft.initUiElements(this.$container);
                     this._bindEventHandlersForFieldSelect();
                 })
@@ -93,7 +96,8 @@ Craft.BulkEditModal = Garnish.Modal.extend({
             Craft.sendActionRequest('POST', 'venveo-bulk-edit/bulk-edit/get-edit-screen', {
                 data: {
                     ...this.viewParams,
-                    fieldConfig: fieldConfig
+                    fieldConfig: fieldConfig,
+                    namespace: this.namespace
                 }
             })
                 .then((response) => {
@@ -164,7 +168,8 @@ Craft.BulkEditModal = Garnish.Modal.extend({
                 data: {
                     ...this.viewParams,
                     fieldConfig: this.fieldConfig,
-                    formValues: (new URLSearchParams(formValues)).toString()
+                    formValues: (new URLSearchParams(formValues)).toString(),
+                    namespace: this.namespace
                 }
             }).then(() => {
                     Craft.cp.trackJobProgress(false, true);
