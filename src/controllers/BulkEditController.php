@@ -190,7 +190,11 @@ class BulkEditController extends ElementIndexesController
                 $fieldConfig->handle = Craft::$app->fields->getFieldById($fieldConfig->fieldId)->handle;
                 $fieldConfig->serializedValue = Json::encode($values[$fieldConfig->handle]);
             }
-            $fieldConfigs[] = $fieldConfig;
+            if($fieldConfig->validate()) {
+                $fieldConfigs[] = $fieldConfig;
+            } else {
+                throw new \Exception('Failed to validate field configuration: '. Json::encode($fieldConfig));
+            }
         }
 
 
