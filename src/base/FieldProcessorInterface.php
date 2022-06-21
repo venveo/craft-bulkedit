@@ -9,13 +9,14 @@ interface FieldProcessorInterface
 {
     /**
      * An array of class names for supported fields
-     * @return array
      */
     public static function getSupportedFields(): array;
+    
+    public static function getSupportedNativeFields(): array;
 
     /**
      * Returns the supported strategies for this field type
-     * @return array
+     * @return string[]
      */
     public static function getSupportedStrategies(): array;
 

@@ -1,5 +1,16 @@
 # Bulk Edit Changelog
 
+## 4.0.0-RC1 - 2022-06-22
+
+### Added
+- "Select All" support - this works well with filtres, conditions, etc.
+
+### Changed
+- Bulk Edit now requires Craft 4
+- Plugin no longer requires db tables - all data is now stored in the queue job.
+- Field strategies are now represented as classes implementing FieldStrategyInterface
+- Refactored field rendering for future support of native fields
+
 ## 2.0.6 - 2021-07-22
 ### Fixed
 - Fixed a bug where fields may not always get the correct source site ID

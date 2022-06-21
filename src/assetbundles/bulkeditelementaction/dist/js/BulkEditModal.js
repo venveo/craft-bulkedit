@@ -1,83 +1,57 @@
 /** global: Craft */
 /** global: Garnish */
 /** global: $ */
+// noinspection JSVoidFunctionReturnValueUsed
 
 /**
  * Select Fields Modal
  */
-Craft.BulkEditModal = Garnish.Modal.extend(
-    {
+Craft.BulkEditModal = Garnish.Modal.extend({
+        elementIndex: null,
+        elementTypeName: null,
+
+        viewParams: null,
+        selectedElementIds: null,
+        fieldConfig: {},
+
         $spinner: null,
-        siteId: null,
         elementIds: [],
         fieldIds: [],
         type: null,
-        loaded: null,
         requestId: 0,
+
+        namespace: null,
 
         /**
          * Initialize the preview file modal.
          * @returns {*|void}
          */
-        init: function(elementIds, settings) {
-            settings = $.extend(this.defaultSettings, settings);
+        init: function(elementIndex, settings) {
+            this.base();
+            this.setSettings(settings, {
+                resizable: true,
+            });
 
-            settings.onHide = this._onHide.bind(this);
+            this.elementIndex = elementIndex;
 
-            if (Craft.BulkEditModal.openInstance) {
-                if (!this._compareArray(elementIds, this.elementIds)) {
-                    var instance = Craft.BulkEditModal.openInstance;
-                    instance.loadFields(elementIds);
-                }
-                return this.destroy();
+            const $container = $('<div id="select-fields-modal" class="modal loading"/>')
+            this.setContainer($container);
+            this.show();
+
+            this.selectedElementIds = this.elementIndex.getSelectedElementIds()
+
+            let viewParams = this.elementIndex.getViewParams();
+            delete viewParams.criteria.offset;
+            delete viewParams.criteria.limit;
+            delete viewParams.collapsedElementIds;
+            viewParams.selectAll = false
+
+            if(this.selectedElementIds) {
+                viewParams.criteria.id = this.selectedElementIds
             }
-
-            Craft.BulkEditModal.openInstance = this;
-            this.elementIds = elementIds;
-
-            this.$container = $('<div id="select-fields-modal" class="modal loading"/>').appendTo(Garnish.$bod);
-
-            this.base(this.$container, $.extend({
-                resizable: false
-            }, settings));
-
-            // Cut the flicker, just show the nice person the preview.
-            if (this.$container) {
-                this.$container.velocity('stop');
-                this.$container.show().css('opacity', 1);
-
-                this.$shade.velocity('stop');
-                this.$shade.show().css('opacity', 1);
-            }
-
-            this.loadFields(elementIds)
-        },
-
-        loadFieldEditor: function(data) {
-            // Make sure we tack on our request ID to the form submission...
-            data = data + '&requestId=' + this.requestId;
-            Craft.postActionRequest('venveo-bulk-edit/bulk-edit/get-edit-screen', data, function(response, textStatus) {
-                if (textStatus === 'success') {
-                    if (response.success) {
-                        if (response.requestId != this.requestId) {
-                            return;
-                        }
-                        this.$container.removeClass('loading');
-                        this.$spinner.remove();
-                        this.loaded = true;
-                        this.$container.append(response.modalHtml);
-                        Craft.initUiElements(this.$container);
-                        Craft.appendHeadHtml(response.headHtml);
-                        Craft.appendFootHtml(response.footHtml);
-
-                        this._unbindEventHandlersForFieldSelect();
-                        this._bindEventHandlersForFieldEditor();
-                    } else {
-                        alert(response.error);
-                        this.hide();
-                    }
-                }
-            }.bind(this));
+            viewParams.siteId = viewParams.criteria.siteId
+            this.viewParams = viewParams
+            this.loadFieldSelector()
         },
 
         _initSpinner() {
@@ -90,38 +64,56 @@ Craft.BulkEditModal = Garnish.Modal.extend(
         },
 
 
-        loadFields: function(elementIds) {
+
+        /**
+         * Loads a list of fields that can be edited given the current selection
+         */
+        loadFieldSelector: function() {
             this._initSpinner();
-            this.requestId++;
+            this.$container.find('.field-edit-modal').remove();
 
-            var viewParams = Craft.elementIndex.getViewParams();
-            Craft.postActionRequest('venveo-bulk-edit/bulk-edit/get-fields',
-                {
-                    elementIds: elementIds,
-                    requestId: this.requestId,
-                    viewParams: viewParams
-                }, function(response, textStatus) {
-                if (textStatus === 'success') {
-                    if (response.success) {
-                        if (response.requestId != this.requestId) {
-                            return;
-                        }
+            Craft.sendActionRequest('POST', 'venveo-bulk-edit/bulk-edit/get-fields', {
+                data: this.viewParams
+            })
+                .then((response) => {
+                    const data = response.data
+                    this.$container.append(data.modalHtml);
+                    this.namespace = data.namespace
+                    Craft.initUiElements(this.$container);
+                    this._bindEventHandlersForFieldSelect();
+                })
+                .finally(() => {
+                    this.$container.removeClass('loading');
+                    this.$spinner.remove();
+                });
+        },
 
-                        this.$container.removeClass('loading');
-                        this.$spinner.remove();
+        loadFieldEditor: function(fieldConfig) {
+            this._initSpinner();
+            this.$container.find('.field-edit-modal').remove();
 
-                        this.loaded = true;
-                        this.$container.append(response.modalHtml);
-                        this.elementIds = response.elementIds;
-                        this.siteId = response.siteId;
-                        Craft.initUiElements(this.$container);
-                        this._bindEventHandlersForFieldSelect();
-                    } else {
-                        alert(response.error);
-                        this.hide();
-                    }
+
+            Craft.sendActionRequest('POST', 'venveo-bulk-edit/bulk-edit/get-edit-screen', {
+                data: {
+                    ...this.viewParams,
+                    fieldConfig: fieldConfig,
+                    namespace: this.namespace
                 }
-            }.bind(this));
+            })
+                .then((response) => {
+                    const data = response.data
+                    this.$container.append(data.modalHtml);
+                    Craft.appendHeadHtml(data.headHtml);
+                    Craft.appendBodyHtml(data.footHtml);
+                    Craft.initUiElements(this.$container);
+
+                    this._unbindEventHandlersForFieldSelect();
+                    this._bindEventHandlersForFieldEditor();
+                })
+                .finally(() => {
+                    this.$container.removeClass('loading');
+                    this.$spinner.remove();
+                });
         },
 
 
@@ -137,14 +129,26 @@ Craft.BulkEditModal = Garnish.Modal.extend(
 
         _bindEventHandlersForFieldSelect: function() {
             this.$container.find('#field-edit-cancel').on('click', this.hide.bind(this));
-            this.$container.find('#select-all-elements').on('click', this._handleSelectAllElementsClicked.bind(this));
             this.$container.find('#fields-table .lightswitch').on('change', this._handleFieldSelect.bind(this));
-            this.$container.find('.submit').on('click', this._handleFieldSelectSubmit.bind(this));
+            this.$container.find('#select-fields-form').on('submit', this._handleFieldSelectSubmit.bind(this));
+            this.$container.find('#bulk-edit-select-all').on('change', this._handleFieldSelectToggleAll.bind(this))
         },
 
         _unbindEventHandlersForFieldSelect: function() {
             this.$container.find('#field-edit-cancel').off('click', this.hide.bind(this));
             this.$container.find('#fields-table .lightswitch').off('change', this._handleFieldSelect.bind(this));
+            this.$container.find('#select-fields-form').off('submit', this._handleFieldSelectSubmit.bind(this));
+            this.$container.find('#bulk-edit-select-all').off('change', this._handleFieldSelectToggleAll.bind(this))
+        },
+
+        _handleFieldSelectToggleAll: function(e) {
+            this.viewParams.selectAll = e.target.checked
+            if(this.viewParams.selectAll) {
+                this.viewParams.criteria.id = null
+            } else {
+                this.viewParams.criteria.id = this.selectedElementIds
+            }
+            this.loadFieldSelector()
         },
 
         _getCheckedFields: function() {
@@ -159,25 +163,29 @@ Craft.BulkEditModal = Garnish.Modal.extend(
             e.preventDefault();
             this.$container.find('.submit').attr('disabled', 'disabled');
             this.$container.find('.submit').addClass('disabled')
-            const formValues = this.$container.find('#bulk-edit-values-modal').serializeArray();
-            Craft.postActionRequest('venveo-bulk-edit/bulk-edit/save-context', formValues, function(response) {
+            const formValues = new FormData(this.$container.find('#bulk-edit-values-modal')[0])
+            Craft.sendActionRequest('POST', 'venveo-bulk-edit/bulk-edit/save-context', {
+                data: {
+                    ...this.viewParams,
+                    fieldConfig: this.fieldConfig,
+                    formValues: (new URLSearchParams(formValues)).toString(),
+                    namespace: this.namespace
+                }
+            }).then(() => {
+                    Craft.cp.trackJobProgress(false, true);
+                    Craft.cp.runQueue();
+            }).finally(() => {
                 this.hide();
-                Craft.cp.trackJobProgress(false, true);
-                Craft.cp.runQueue();
-            }.bind(this));
-        },
-
-        _handleSelectAllElementsClicked: function(e) {
-            e.preventDefault();
-            this._initSpinner();
+            })
         },
 
         _handleFieldSelectSubmit: function(e) {
             e.preventDefault();
-            const data = this.$container.find('form').serialize();
+            const formData = new FormData(e.target);
+            const formDataObject = this._getFieldConfig(formData)
+            this.fieldConfig = formDataObject
             this.$container.find('.field-edit-modal').remove();
-            this._initSpinner();
-            this.loadFieldEditor(data);
+            this.loadFieldEditor(formDataObject);
         },
 
         _handleFieldSelect: function(e) {
@@ -191,12 +199,29 @@ Craft.BulkEditModal = Garnish.Modal.extend(
             }
         },
 
+        _getFieldConfig: function(formData) {
+            var formDataObject = {};
+            const fieldHandleRegex = /fields\[(\d+)\]\[(.+)\]/;
+            formData.forEach((value, key) => {
+                const fieldHandle = key.match(fieldHandleRegex)[1]
+                const propertyName = key.match(fieldHandleRegex)[2]
+                if (!formDataObject.hasOwnProperty(fieldHandle)) {
+                    formDataObject[fieldHandle] = {
+                        id: fieldHandle
+                    }
+                }
+                formDataObject[fieldHandle][propertyName] = value
+            });
+            return formDataObject
+        },
+
 
         /**
          * Disappear immediately forever.
          * @returns {boolean}
          */
         selfDestruct: function() {
+            debugger;
             var instance = Craft.BulkEditModal.openInstance;
 
             instance.hide();
@@ -213,6 +238,7 @@ Craft.BulkEditModal = Garnish.Modal.extend(
          * @private
          */
         _onHide: function() {
+            debugger;
             Craft.BulkEditModal.openInstance = null;
             this.$shade.remove();
             this._unbindEventHandlersForFieldSelect();

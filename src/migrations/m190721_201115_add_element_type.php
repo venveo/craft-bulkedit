@@ -12,7 +12,7 @@ class m190721_201115_add_element_type extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): void
     {
         $this->addColumn('{{%bulkedit_editcontext}}', 'elementType', $this->string()->notNull());
     }
@@ -20,7 +20,7 @@ class m190721_201115_add_element_type extends Migration
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): void
     {
         $this->dropColumn('{{%bulkedit_editcontext}}', 'elementType');
     }
