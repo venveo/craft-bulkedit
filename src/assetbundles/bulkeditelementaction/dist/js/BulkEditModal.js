@@ -99,9 +99,9 @@ Craft.BulkEditModal = Garnish.Modal.extend({
                 .then((response) => {
                     const data = response.data
                     this.$container.append(data.modalHtml);
-                    Craft.initUiElements(this.$container);
                     Craft.appendHeadHtml(data.headHtml);
-                    Craft.appendFootHtml(data.footHtml);
+                    Craft.appendBodyHtml(data.footHtml);
+                    Craft.initUiElements(this.$container);
 
                     this._unbindEventHandlersForFieldSelect();
                     this._bindEventHandlersForFieldEditor();
@@ -133,6 +133,8 @@ Craft.BulkEditModal = Garnish.Modal.extend({
         _unbindEventHandlersForFieldSelect: function() {
             this.$container.find('#field-edit-cancel').off('click', this.hide.bind(this));
             this.$container.find('#fields-table .lightswitch').off('change', this._handleFieldSelect.bind(this));
+            this.$container.find('#select-fields-form').off('submit', this._handleFieldSelectSubmit.bind(this));
+            this.$container.find('#bulk-edit-select-all').off('change', this._handleFieldSelectToggleAll.bind(this))
         },
 
         _handleFieldSelectToggleAll: function(e) {
@@ -214,6 +216,7 @@ Craft.BulkEditModal = Garnish.Modal.extend({
          * @returns {boolean}
          */
         selfDestruct: function() {
+            debugger;
             var instance = Craft.BulkEditModal.openInstance;
 
             instance.hide();
@@ -230,6 +233,7 @@ Craft.BulkEditModal = Garnish.Modal.extend({
          * @private
          */
         _onHide: function() {
+            debugger;
             Craft.BulkEditModal.openInstance = null;
             this.$shade.remove();
             this._unbindEventHandlersForFieldSelect();

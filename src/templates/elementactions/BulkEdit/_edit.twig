@@ -2,16 +2,9 @@
 
 <div class="bulkedit field-edit-modal">
   <form id="bulk-edit-values-modal">
-  {% for field in fields %}
+      {% if fieldHtml %}
     <div class="pane">
-{#      {% namespace 'fields' %}#}
-        {% include "_includes/field" with {
-          field:    field,
-          required: false,
-          element: elementPlaceholder,
-          siteId: site.id
-        } only %}
-{#      {% endnamespace %}#}
+        {{ fieldHtml|raw }}
     </div>
     <div class="field-edit-modal-bar">
       <div class="buttons right">
@@ -25,6 +18,6 @@
            <div class="btn" id="field-edit-cancel">{{"Cancel"|t('venveo-bulk-edit')}}</div>
        </div>
        </div>
-  {% endfor %}
+  {% endif %}
   </form>
 </div>

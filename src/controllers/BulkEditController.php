@@ -13,7 +13,10 @@ namespace venveo\bulkedit\controllers;
 use Craft;
 use craft\controllers\ElementIndexesController;
 use craft\errors\SiteNotFoundException;
+use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Json;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
 use craft\models\Site;
 use craft\records\Field;
 use craft\web\Response;
@@ -112,7 +115,6 @@ class BulkEditController extends ElementIndexesController
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $service = Plugin::getInstance()->bulkEdit;
         $fields = Craft::$app->getRequest()->getRequiredParam('fieldConfig');
         $enabledFields = array_filter($fields, fn($field) => $field['enabled']);
         $fields = Field::findAll(array_keys($enabledFields));
@@ -134,23 +136,37 @@ class BulkEditController extends ElementIndexesController
             'siteId' => $this->site->id,
         ]);
 
-        // We've gotta register any asset bundles - this won't actually be rendered
+        $fieldLayoutElements = [];
+        $fieldLayout = new FieldLayout();
+        $fieldLayoutTab = new FieldLayoutTab();
+        $fieldLayoutTab->setLayout($fieldLayout);
+        $fieldLayoutTab->name = 'Content';
+        $fieldLayoutTab->uid = 'content';
+
         foreach ($fieldModels as $fieldModel) {
-            $view->renderPageTemplate('_includes/field', [
-                'field' => $fieldModel,
-                'static' => true,
-                'element' => $elementPlaceholder,
-                'required' => false,
-            ]);
+            $fieldLayoutElement = new CustomField();
+            $fieldLayoutElement->setField($fieldModel);
+            $fieldLayoutElements[] = $fieldLayoutElement;
         }
+        $fieldLayoutTab->setElements($fieldLayoutElements);
+        $fieldLayout->setTabs([$fieldLayoutTab]);
+        $fieldLayoutForm = $fieldLayout->createForm($elementPlaceholder, false, ['namespace' => 'asdf']);
+        $html = $fieldLayoutForm->render();
+
+
+        // We've gotta register any asset bundles - this won't actually be rendered
+//        foreach ($fieldModels as $fieldModel) {
+//            $view->renderPageTemplate('_includes/field', [
+//                'field' => $fieldModel,
+//                'static' => true,
+//                'element' => $elementPlaceholder,
+//                'required' => false,
+//            ]);
+//        }
 
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_edit', [
-            'fields' => $fieldModels,
-            'elementType' => $this->elementType,
-            'elementPlaceholder' => $elementPlaceholder,
             'totalElements' => $this->elementQuery()->count(),
-            'fieldData' => $enabledFields,
-            'site' => $this->site,
+            'fieldHtml' => $html
         ]);
         $responseData = [
             'success' => true,
@@ -172,8 +188,10 @@ class BulkEditController extends ElementIndexesController
         $this->requirePostRequest();
         $this->requireAcceptsJson();
         // Converts the url encoded form values from the json payload to the expected format.
-        $values = [];
-        parse_str(Craft::$app->getRequest()->getRequiredParam('formValues'), $values);
+        $namespacedValues = [];
+
+        parse_str(Craft::$app->getRequest()->getRequiredParam('formValues'), $namespacedValues);
+        $fieldValues = $namespacedValues['fields'];
 
         $fieldConfigData = Craft::$app->getRequest()->getRequiredParam('fieldConfig');
 
@@ -188,12 +206,12 @@ class BulkEditController extends ElementIndexesController
             if ($fieldConfig->type === FieldType::CustomField) {
                 $fieldConfig->fieldId = (int)$fieldConfigDatum['id'];
                 $fieldConfig->handle = Craft::$app->fields->getFieldById($fieldConfig->fieldId)->handle;
-                $fieldConfig->serializedValue = Json::encode($values[$fieldConfig->handle]);
+                $fieldConfig->serializedValue = Json::encode($fieldValues[$fieldConfig->handle]);
             }
-            if($fieldConfig->validate()) {
+            if ($fieldConfig->validate()) {
                 $fieldConfigs[] = $fieldConfig;
             } else {
-                throw new \Exception('Failed to validate field configuration: '. Json::encode($fieldConfig));
+                throw new \Exception('Failed to validate field configuration: ' . Json::encode($fieldConfig));
             }
         }
 
