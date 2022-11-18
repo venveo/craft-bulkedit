@@ -2,6 +2,7 @@
 
 namespace venveo\bulkedit\elements\processors;
 
+use Craft;
 use craft\base\Element;
 use craft\commerce\records\Product;
 use craft\commerce\records\ProductType;
