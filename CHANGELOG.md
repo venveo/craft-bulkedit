@@ -1,5 +1,10 @@
 # Bulk Edit Changelog
 
+## 4.0.0 - Unreleased
+
+### Fixed
+- Fix bulk editing products (Thanks @nilsenpaul)
+
 ## 4.0.0-RC1 - 2022-06-22
 
 ### Added
