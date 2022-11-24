@@ -1,4 +1,4 @@
-# Bulk Edit plugin for Craft CMS 3.2+
+# Bulk Edit plugin for Craft CMS 4
 
 ## Overview
 The Bulk Edit plugin adds an action to supported element index pages that allows you to edit fields on a large number of
@@ -35,7 +35,7 @@ potentially erroneous states (for example, removing all content on a required fi
 
 ## Requirements
 
-This plugin requires Craft CMS 3.2.0 or later.
+This plugin requires Craft CMS 4.0.0 or later. For legacy Craft 3 support, use version 2.x
 
 ## Installation
 
