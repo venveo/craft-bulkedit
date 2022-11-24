@@ -8,6 +8,6 @@ class Add implements FieldStrategyInterface
 {
     public static function displayName(): string
     {
-        return 'Add';
+        return Craft::t('bulk-edit', 'Add');
     }
 }
