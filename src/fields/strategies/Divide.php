@@ -9,6 +9,6 @@ class Divide implements FieldStrategyInterface
 {
     public static function displayName(): string
     {
-        return Craft::t('bulk-edit', 'Divide');
+        return Craft::t('venveo-bulk-edit', 'Divide');
     }
 }
