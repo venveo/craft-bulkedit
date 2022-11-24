@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fix bulk editing products (Thanks @nilsenpaul)
+- Added missing string translations (Thanks @nilsenpaul)
 
 ## 4.0.0-RC1 - 2022-06-22
 
