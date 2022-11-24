@@ -9,6 +9,6 @@ class Subtract implements FieldStrategyInterface
 {
     public static function displayName(): string
     {
-        return Craft::t('bulk-edit', 'Subtract');
+        return Craft::t('venveo-bulk-edit', 'Subtract');
     }
 }
