@@ -1,5 +1,10 @@
 # Bulk Edit Changelog
 
+## 4.0.1 - 2022-10-28
+
+### Fixed
+- Fixed "Element query executed before Craft is fully initialized." warning
+
 ## 4.0.0 - 2022-10-24
 
 ### Added

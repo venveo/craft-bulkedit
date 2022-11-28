@@ -21,6 +21,7 @@ use craft\elements\User;
 use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\services\UserPermissions;
+use craft\web\Application;
 use venveo\bulkedit\elements\actions\BulkEditElementAction;
 use venveo\bulkedit\services\BulkEdit;
 use yii\base\Event;
@@ -78,50 +79,51 @@ class Plugin extends BasePlugin
                 'permissions' => $permissions
             ];
         });
-
-        if (Craft::$app->request->isCpRequest) {
-            if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_ENTRIES)) {
-                Event::on(Entry::class, Element::EVENT_REGISTER_ACTIONS,
-                    function(RegisterElementActionsEvent $event) {
-                        $event->actions[] = BulkEditElementAction::class;
-                    }
-                );
-            }
-
-            if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_CATEGORIES)) {
-                Event::on(Category::class, Element::EVENT_REGISTER_ACTIONS,
-                    function(RegisterElementActionsEvent $event) {
-                        $event->actions[] = BulkEditElementAction::class;
-                    }
-                );
-            }
-
-            if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_ASSETS)) {
-                Event::on(Asset::class, Element::EVENT_REGISTER_ACTIONS,
-                    function(RegisterElementActionsEvent $event) {
-                        $event->actions[] = BulkEditElementAction::class;
-                    }
-                );
-            }
-
-            if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_USERS)) {
-                Event::on(User::class, Element::EVENT_REGISTER_ACTIONS,
-                    function(RegisterElementActionsEvent $event) {
-                        $event->actions[] = BulkEditElementAction::class;
-                    }
-                );
-            }
-
-            if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_PRODUCTS)) {
-                if (Craft::$app->plugins->isPluginInstalled('commerce') && class_exists(Product::class)) {
-                    Event::on(Product::class, Element::EVENT_REGISTER_ACTIONS,
-                        function(RegisterElementActionsEvent $event) {
+        Craft::$app->on(Application::EVENT_INIT, function() {
+            if (Craft::$app->request->isCpRequest) {
+                if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_ENTRIES)) {
+                    Event::on(Entry::class, Element::EVENT_REGISTER_ACTIONS,
+                        function (RegisterElementActionsEvent $event) {
                             $event->actions[] = BulkEditElementAction::class;
                         }
                     );
                 }
+
+                if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_CATEGORIES)) {
+                    Event::on(Category::class, Element::EVENT_REGISTER_ACTIONS,
+                        function (RegisterElementActionsEvent $event) {
+                            $event->actions[] = BulkEditElementAction::class;
+                        }
+                    );
+                }
+
+                if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_ASSETS)) {
+                    Event::on(Asset::class, Element::EVENT_REGISTER_ACTIONS,
+                        function (RegisterElementActionsEvent $event) {
+                            $event->actions[] = BulkEditElementAction::class;
+                        }
+                    );
+                }
+
+                if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_USERS)) {
+                    Event::on(User::class, Element::EVENT_REGISTER_ACTIONS,
+                        function (RegisterElementActionsEvent $event) {
+                            $event->actions[] = BulkEditElementAction::class;
+                        }
+                    );
+                }
+
+                if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_PRODUCTS)) {
+                    if (Craft::$app->plugins->isPluginInstalled('commerce') && class_exists(Product::class)) {
+                        Event::on(Product::class, Element::EVENT_REGISTER_ACTIONS,
+                            function (RegisterElementActionsEvent $event) {
+                                $event->actions[] = BulkEditElementAction::class;
+                            }
+                        );
+                    }
+                }
             }
-        }
+        });
     }
 
     /**
