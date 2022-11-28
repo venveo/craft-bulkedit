@@ -7,6 +7,9 @@ use craft\base\Element;
 
 abstract class AbstractElementTypeProcessor implements ElementTypeProcessorInterface
 {
+    /**
+     * @return mixed[]
+     */
     public static function getEditableAttributes(): array
     {
         return [];
@@ -14,9 +17,7 @@ abstract class AbstractElementTypeProcessor implements ElementTypeProcessorInter
 
     public static function getMockElement($elementIds = [], $params = []): Element
     {
-        /** @var Element $elementPlaceholder */
         $params['type'] = static::getType();
-        $elementPlaceholder = Craft::$app->elements->createElement($params);
-        return $elementPlaceholder;
+        return Craft::$app->elements->createElement($params);
     }
 }

@@ -20,6 +20,8 @@ use yii\db\ActiveQueryInterface;
 class AttributeWrapper extends Model
 {
     public $handle;
+
     public $name;
+
     public $strategy;
 }

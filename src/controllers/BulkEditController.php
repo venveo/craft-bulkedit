@@ -11,19 +11,24 @@
 namespace venveo\bulkedit\controllers;
 
 use Craft;
+use craft\controllers\ElementIndexesController;
 use craft\errors\SiteNotFoundException;
-use craft\helpers\ElementHelper;
-use craft\records\Element;
+use craft\fieldlayoutelements\CustomField;
+use craft\helpers\Json;
+use craft\helpers\StringHelper;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
+use craft\models\Site;
 use craft\records\Field;
-use craft\web\Controller;
 use craft\web\Response;
 use Exception;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use venveo\bulkedit\base\ElementTypeProcessorInterface;
+use venveo\bulkedit\enums\FieldType;
+use venveo\bulkedit\models\FieldConfig;
 use venveo\bulkedit\Plugin;
-use venveo\bulkedit\services\BulkEdit as BulkEditService;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -31,12 +36,37 @@ use yii\web\BadRequestHttpException;
  * @package   BulkEdit
  * @since     1.0.0
  */
-class BulkEditController extends Controller
+class BulkEditController extends ElementIndexesController
 {
+    public bool $isSelectingAll = false;
+
+    public ?Site $site = null;
+
+    public function beforeAction($action): bool
+    {
+        parent::beforeAction($action);
+        $this->isSelectingAll = $this->isSelectingAll();
+        $this->site = $this->site();
+        if (!$this->site) {
+            throw new SiteNotFoundException('Site does not exist');
+        }
+        return true;
+    }
+
+    public function isSelectingAll(): bool
+    {
+        return $this->request->getParam('selectAll', false);
+    }
+
+    public function site(): Site
+    {
+        $siteId = $this->request->getParam('siteId', Craft::$app->sites->currentSite->id);
+        return Craft::$app->sites->getSiteById($siteId);
+    }
+
     /**
      * Return the file preview for an Asset.
      *
-     * @return Response
      * @throws BadRequestHttpException if not a valid request
      * @throws LoaderError
      * @throws RuntimeError
@@ -47,60 +77,27 @@ class BulkEditController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+        $namespace = StringHelper::randomString(10);
 
-        $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
-        $requestId = Craft::$app->getRequest()->getRequiredParam('requestId');
-        $viewParams = Craft::$app->getRequest()->getRequiredParam('viewParams');
-
-        $elementType = $viewParams['elementType'];
-        $siteId = $viewParams['criteria']['siteId'];
-        $site = Craft::$app->sites->getSiteById($siteId);
-
-//        $sourceKey = $viewParams['source'];
-//        $criteria = $viewParams['criteria'];
-//
-//        $query = $elementType::find();
-//        $source = ElementHelper::findSource($elementType, $sourceKey, 'index');
-//
-//
-//        if ($source === null) {
-//            throw new BadRequestHttpException('Invalid source key: ' . $sourceKey);
-//        }
-//
-//        // Does the source specify any criteria attributes?
-//        if (isset($source['criteria'])) {
-//            Craft::configure($query, $source['criteria']);
-//        }
-//
-//        // Override with the request's params
-//        if ($criteria !== null) {
-//            if (isset($criteria['trashed'])) {
-//                $criteria['trashed'] = (bool)$criteria['trashed'];
-//            }
-//            Craft::configure($query, $criteria);
-//        }
-
-        /** @var BulkEditService $service */
-        $service = Plugin::$plugin->bulkEdit;
-        $fields = $service->getFieldWrappers($elementIds, $elementType);
-        $attributes = $service->getAttributeWrappers($elementType);
+        $service = Plugin::getInstance()->bulkEdit;
+        $customFields = $service->getFieldWrappersForElementQuery($this->getElementQuery());
 
         $view = Craft::$app->getView();
+        $view->setNamespace($namespace);
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_fields', [
-            'fieldWrappers' => $fields,
-            'attributeWrappers' => $attributes,
-            'elementType' => $elementType,
+            'fieldWrappers' => $customFields,
             'bulkedit' => $service,
-            'elementIds' => $elementIds,
-            'site' => $site
+            'selectedTotal' => $this->getElementQuery()->count(),
+            'selectAllTotal' => $this->getElementQuery()->id(null)->count(),
+            'selectAllChecked' => $this->isSelectingAll,
+            'site' => $this->site,
         ]);
 
         $responseData = [
             'success' => true,
             'modalHtml' => $modalHtml,
-            'requestId' => $requestId,
-            'elementIds' => $elementIds,
-            'siteId' => $site->id
+            'siteId' => $this->site->id,
+            'namespace' => $namespace,
         ];
         $responseData['headHtml'] = $view->getHeadHtml();
         $responseData['footHtml'] = $view->getBodyHtml();
@@ -109,96 +106,65 @@ class BulkEditController extends Controller
     }
 
     /**
-     * @return \yii\web\Response
      * @throws BadRequestHttpException
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function actionGetEditScreen()
+    public function actionGetEditScreen(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-
-        $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
-        $requestId = Craft::$app->getRequest()->getRequiredParam('requestId');
-        $elementType = Craft::$app->getRequest()->getRequiredParam('elementType');
-        $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
-        $fields = Craft::$app->getRequest()->getRequiredParam('fields');
-
-        $viewParams = Craft::$app->getRequest()->getParam('viewParams');
-
-        // Pull out the enabled fields
-        $enabledFields = [];
-        foreach ($fields as $fieldId => $field) {
-            if ($field['enabled']) {
-                $enabledFields[$fieldId] = $field;
-            }
-        }
-
-
-        $site = Craft::$app->getSites()->getSiteById($siteId);
-        if (!$site) {
-            throw new Exception('Site does not exist');
-        }
-
-
+        $fields = $this->request->getRequiredParam('fieldConfig');
+        $namespace = $this->request->getRequiredParam('namespace');
+        $enabledFields = array_filter($fields, fn($field) => $field['enabled']);
         $fields = Field::findAll(array_keys($enabledFields));
-        if (count($fields) !== count($enabledFields)) {
-            throw new Exception('Could not find all fields requested');
-        }
-
-        $elementIds = explode(',', $elementIds);
-        $elements = Element::findAll($elementIds);
-        if (count($elements) !== count($elementIds)) {
-            throw new Exception('Could not find all elements requested');
-        }
-
-        try {
-            $fieldModels = [];
-            /** @var Field $field */
-            foreach ($fields as $field) {
-                $fieldModel = Craft::$app->fields->getFieldById($field->id);
-                if ($fieldModel && Plugin::$plugin->bulkEdit->isFieldSupported($fieldModel)) {
-                    $fieldModels[] = $fieldModel;
-                }
+        $fieldModels = [];
+        /** @var Field $field */
+        foreach ($fields as $field) {
+            $fieldModel = Craft::$app->fields->getFieldById($field->id);
+            if ($fieldModel && Plugin::$plugin->bulkEdit->isFieldSupported($fieldModel)) {
+                $fieldModels[] = $fieldModel;
             }
-        } catch (Exception $e) {
-            throw $e;
         }
 
         $view = Craft::$app->getView();
 
         /** @var ElementTypeProcessorInterface $processor */
-        $processor = Plugin::getInstance()->bulkEdit->getElementTypeProcessor($elementType);
+        $processor = Plugin::getInstance()->bulkEdit->getElementTypeProcessor($this->elementType);
+        $elementIds = [$this->getElementQuery()->one()->id];
         $elementPlaceholder = $processor::getMockElement($elementIds, [
-            'siteId' => $siteId
+            'siteId' => $this->site->id,
         ]);
 
-        // We've gotta register any asset bundles - this won't actually be rendered
+        $fieldLayoutElements = [];
+        $fieldLayout = new FieldLayout();
+        $fieldLayoutTab = new FieldLayoutTab();
+        $fieldLayoutTab->setLayout($fieldLayout);
+        $fieldLayoutTab->name = 'Content';
+        $fieldLayoutTab->uid = 'content';
+
         foreach ($fieldModels as $fieldModel) {
-            $view->renderPageTemplate('_includes/field', [
-                'field' => $fieldModel,
-                'static' => true,
-                'element' => $elementPlaceholder,
-                'required' => false
-            ]);
+            $fieldLayoutElement = new CustomField();
+            $fieldLayoutElement->setField($fieldModel);
+            $fieldLayoutElements[] = $fieldLayoutElement;
         }
+        $fieldLayoutTab->setElements($fieldLayoutElements);
+        $fieldLayout->setTabs([$fieldLayoutTab]);
+        $fieldLayoutForm = $fieldLayout->createForm($elementPlaceholder, false, [
+            'namespace' => $namespace
+        ]);
+        $html = $fieldLayoutForm->render();
 
         $modalHtml = $view->renderTemplate('venveo-bulk-edit/elementactions/BulkEdit/_edit', [
-            'fields' => $fieldModels,
-            'elementType' => $elementType,
-            'elementPlaceholder' => $elementPlaceholder,
-            'elementIds' => $elementIds,
-            'fieldData' => $enabledFields,
-            'site' => $site
+            'totalElements' => $this->elementQuery()->count(),
+            'fieldHtml' => $html
         ]);
         $responseData = [
             'success' => true,
             'modalHtml' => $modalHtml,
-            'requestId' => $requestId,
-            'siteId' => $site->id
+            'siteId' => $this->site->id,
         ];
         $responseData['headHtml'] = $view->getHeadHtml();
         $responseData['footHtml'] = $view->getBodyHtml();
@@ -207,52 +173,54 @@ class BulkEditController extends Controller
     }
 
     /**
-     * @return \yii\web\Response
      * @throws BadRequestHttpException
      * @throws \yii\db\Exception
      */
-    public function actionSaveContext()
+    public function actionSaveContext(): \yii\web\Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+        $namespace = $this->request->getRequiredParam('namespace');
+        // Converts the url encoded form values from the json payload to the expected format.
+        $namespacedValues = [];
 
-        $elementIds = Craft::$app->getRequest()->getRequiredParam('elementIds');
-        $elementType = Craft::$app->getRequest()->getRequiredParam('elementType');
-        $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
-        $fieldMeta = array_values(Craft::$app->getRequest()->getRequiredParam('fieldMeta'));
+        parse_str($this->request->getRequiredParam('formValues'), $namespacedValues);
+        $fieldValues = $namespacedValues[$namespace]['fields'];
 
-        $fieldStrategies = [];
-        foreach ($fieldMeta as $field) {
-            $fieldStrategies[$field['id']] = $field['strategy'];
-        }
-        $fieldIds = array_keys($fieldStrategies);
-        $fields = Field::findAll($fieldIds);
+        $fieldConfigData = $this->request->getRequiredParam('fieldConfig');
 
-        $values = Craft::$app->getRequest()->getBodyParam('fields', []);
-
-        $keyedFieldValues = [];
-        foreach ($values as $handle => $value) {
-            foreach ($fields as $field) {
-                if ($field->handle === $handle) {
-                    $fieldId = $field->id;
-                }
+        $fieldConfigs = [];
+        foreach ($fieldConfigData as $fieldConfigDatum) {
+            if (!$fieldConfigDatum['enabled']) {
+                continue;
             }
-            if (!isset($fieldId)) {
-                throw new Exception('Failed to locate field');
+            $fieldConfig = new FieldConfig();
+            $fieldConfig->strategy = $fieldConfigDatum['strategy'];
+            $fieldConfig->type = $fieldConfigDatum['type'];
+            if ($fieldConfig->type === FieldType::CustomField) {
+                $fieldConfig->fieldId = (int)$fieldConfigDatum['id'];
+                $fieldConfig->handle = Craft::$app->fields->getFieldById($fieldConfig->fieldId)->handle;
+                $fieldConfig->serializedValue = Json::encode($fieldValues[$fieldConfig->handle]);
             }
-            $keyedFieldValues[$fieldId] = $value;
+            if ($fieldConfig->validate()) {
+                $fieldConfigs[] = $fieldConfig;
+            } else {
+                throw new \Exception('Failed to validate field configuration: ' . Json::encode($fieldConfig));
+            }
         }
 
-        $elementIds = explode(',', $elementIds);
+
+        $elementIds = $this->getElementQuery()->limit(null)->ids();
 
         try {
-            Plugin::$plugin->bulkEdit->saveContext($elementType, $siteId, $elementIds, $fieldIds, $keyedFieldValues, $fieldStrategies);
+            Plugin::$plugin->bulkEdit->saveContext($this->elementType, $this->site->id, $elementIds, $fieldConfigs);
 
             return $this->asJson([
-                'success' => true
+                'success' => true,
             ]);
         } catch (Exception $e) {
-            return $this->asErrorJson('Failed to save context');
+            Craft::error('Failed to save context', $e->getTraceAsString(), __METHOD__);
+            return $this->asFailure('Failed to save context');
         }
     }
 }
