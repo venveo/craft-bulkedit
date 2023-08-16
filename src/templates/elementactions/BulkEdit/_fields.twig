@@ -2,15 +2,20 @@
 
 <div class="bulkedit field-edit-modal">
     <h2>{{ "Select Fields"|t('venveo-bulk-edit') }}</h2>
-    <p>Editing <strong>{{ selectedTotal }}</strong> elements on site
-        <strong>{{ site.name }} ({{ site.language }})</strong></p>
+    <p>
+        {{ "Editing {total} elements on site {site} ({language})"|t('venveo-bulk-edit', params = {
+            site: site.name,
+            language: site.language,
+            total: selectedTotal
+        }) }}
+    </p>
     {% if fieldWrappers|length %}
 
     <div style="margin-bottom: 10px;">
         {{ forms.checkbox({
             id: 'bulk-edit-select-all',
             checked: selectAllChecked,
-            label: 'Select all ' ~ selectAllTotal ~ ' elements matching current filters',
+            label: 'Select all {total} elements matching current filters'|t('venveo-bulk-edit', params = {total: selectAllTotal}),
             name: 'selectAll',
         }) }}
     </div>
@@ -20,22 +25,22 @@
                 <thead>
                 <th scope="col" class="col-header">
         <span class="heading-text">
-            Field Name
+            {{ 'Field Name'|t('venveo-bulk-edit') }}
         </span>
                 </th>
                 <th scope="col" class="col-header">
         <span class="heading-text">
-            Field Handle
+            {{ 'Field Handle'|t('venveo-bulk-edit') }}
         </span>
                 </th>
                 <th scope="col" class="col-header">
         <span class="heading-text">
-            Edit
+            {{ 'Edit'|t('venveo-bulk-edit') }}
         </span>
                 </th>
                 <th scope="col" class="col-header">
         <span class="heading-text">
-            Strategy
+            {{ 'Strategy'|t('venveo-bulk-edit') }}
         </span>
                 </th>
                 </thead>
@@ -82,12 +87,12 @@
             </table>
         {% endif %}
         {% else %}
-            <p>These elements have no associated fields.</p>
+            <p>{{ 'These elements have no associated fields.'|t('venveo-bulk-edit') }}</p>
         {% endif %}
         <div class="field-edit-modal-bar">
             <div class="buttons right">
-                <div class="btn" id="field-edit-cancel">Cancel</div>
-                <input type="submit" value="Continue" disabled
+                <div class="btn" id="field-edit-cancel">{{ "Cancel"|t('venveo-bulk-edit') }}</div>
+                <input type="submit" value="{{ "Continue"|t('venveo-bulk-edit') }}" disabled
                        class="btn submit disabled"></div>
         </div>
     </form>
