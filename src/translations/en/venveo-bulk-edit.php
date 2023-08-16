@@ -14,37 +14,37 @@
  * @since     1.0.0
  */
 return [
-    // Common Actions
-    'cancel' => 'Cancel',
-    'continue' => 'Continue',
+    // Common
+    'Cancel' => 'Cancel',
+    'Continue' => 'Continue',
 
     // Strategies
-    'add' => 'Add',
-    'divide' => 'Divide',
-    'merge' => 'Merge',
-    'multiply' => 'Multiply',
-    'replace' => 'Replace',
-    'subtract' => 'Subtract',
+    'Add' => 'Add',
+    'Divide' => 'Divide',
+    'Merge' => 'Merge',
+    'Multiply' => 'Multiply',
+    'Replace' => 'Replace',
+    'Subtract' => 'Subtract',
 
     // User Permissions
-    'user-permissions-edit-entries' => 'Bulk Edit Entries',
-    'user-permissions-edit-assets' => 'Bulk Edit Assets',
-    'user-permissions-edit-categories' => 'Bulk Edit Categories',
-    'user-permissions-edit-users' => 'Bulk Edit Users',
-    'user-permissions-edit-products' => 'Bulk Edit Products',
-    'user-permissons-label' => 'Bulk Edit',
+    'Bulk Edit Entries' => 'Bulk Edit Entries',
+    'Bulk Edit Assets' => 'Bulk Edit Assets',
+    'Bulk Edit Categories' => 'Bulk Edit Categories',
+    'Bulk Edit Users' => 'Bulk Edit Users',
+    'Bulk Edit Products' => 'Bulk Edit Products',
+    'Bulk Edit' => 'Bulk Edit',
 
     // Select Fields Modal
-    'select-fields' => 'Select Fields',
-    'fields-desc' => 'Editing {total} elements on site {site} ({language})',
-    'col-field-name' => 'Field Name',
-    'col-field-handle' => 'Field Handle',
-    'col-edit' => 'Edit',
-    'col-strategy' => 'Strategy',
-    'assoc-fields-warning' => 'These elements have no associated fields.',
-    'chk-select-all-elements' => 'Select all {total} elements matching current filters',
+    'Select Fields' => 'Select Fields',
+    'Editing {total} elements on site {site} ({language})' => 'Editing {total} elements on site {site} ({language})',
+    'Field Name' => 'Field Name',
+    'Field Handle' => 'Field Handle',
+    'Edit' => 'Edit',
+    'Strategy' => 'Strategy',
+    'These elements have no associated fields.' => 'These elements have no associated fields.',
+    'Select all {total} elements matching current filters' => 'Select all {total} elements matching current filters',
 
     // Edit Fields Modal
-    'edit-fields-warning' => 'It doesn\'t look like there are any fields that support bulk editing on these elements.',
-    'save-elements' => 'Save {totalElements} Elements',
+    'It doesn\'t look like there are any fields that support bulk editing on these elements.' => 'It doesn\'t look like there are any fields that support bulk editing on these elements.',
+    'Save {totalElements} Elements' => 'Save {totalElements} Elements',
 ];

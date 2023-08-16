@@ -1,9 +1,9 @@
 {% import '_includes/forms' as forms %}
 
 <div class="bulkedit field-edit-modal">
-    <h2>{{ "select-fields"|t('venveo-bulk-edit') }}</h2>
+    <h2>{{ "Select Fields"|t('venveo-bulk-edit') }}</h2>
     <p>
-        {{ "fields-desc"|t('venveo-bulk-edit', params = {
+        {{ "Editing {total} elements on site {site} ({language})"|t('venveo-bulk-edit', params = {
             site: site.name,
             language: site.language,
             total: selectedTotal
@@ -15,7 +15,7 @@
         {{ forms.checkbox({
             id: 'bulk-edit-select-all',
             checked: selectAllChecked,
-            label: 'chk-select-all-elements'|t('venveo-bulk-edit', params = {total: selectAllTotal}),
+            label: 'Select all {total} elements matching current filters'|t('venveo-bulk-edit', params = {total: selectAllTotal}),
             name: 'selectAll',
         }) }}
     </div>
@@ -25,22 +25,22 @@
                 <thead>
                 <th scope="col" class="col-header">
         <span class="heading-text">
-            {{ 'col-field-name'|t('venveo-bulk-edit') }}
+            {{ 'Field Name'|t('venveo-bulk-edit') }}
         </span>
                 </th>
                 <th scope="col" class="col-header">
         <span class="heading-text">
-            {{ 'col-field-handle'|t('venveo-bulk-edit') }}
+            {{ 'Field Handle'|t('venveo-bulk-edit') }}
         </span>
                 </th>
                 <th scope="col" class="col-header">
         <span class="heading-text">
-            {{ 'col-edit'|t('venveo-bulk-edit') }}
+            {{ 'Edit'|t('venveo-bulk-edit') }}
         </span>
                 </th>
                 <th scope="col" class="col-header">
         <span class="heading-text">
-            {{ 'col-strategy'|t('venveo-bulk-edit') }}
+            {{ 'Strategy'|t('venveo-bulk-edit') }}
         </span>
                 </th>
                 </thead>
@@ -87,12 +87,12 @@
             </table>
         {% endif %}
         {% else %}
-            <p>{{ 'assoc-fields-warning'|t('venveo-bulk-edit') }}</p>
+            <p>{{ 'These elements have no associated fields.'|t('venveo-bulk-edit') }}</p>
         {% endif %}
         <div class="field-edit-modal-bar">
             <div class="buttons right">
-                <div class="btn" id="field-edit-cancel">{{ "cancel"|t('venveo-bulk-edit') }}</div>
-                <input type="submit" value="{{ "continue"|t('venveo-bulk-edit') }}" disabled
+                <div class="btn" id="field-edit-cancel">{{ "Cancel"|t('venveo-bulk-edit') }}</div>
+                <input type="submit" value="{{ "Continue"|t('venveo-bulk-edit') }}" disabled
                        class="btn submit disabled"></div>
         </div>
     </form>

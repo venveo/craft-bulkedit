@@ -56,26 +56,26 @@ class Plugin extends BasePlugin
         Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS, function(RegisterUserPermissionsEvent $event) {
             $permissions = [];
             $permissions[self::PERMISSION_BULKEDIT_ENTRIES] = [
-                'label' => Craft::t('venveo-bulk-edit', 'user-permissions-edit-entries'),
+                'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Entries'),
             ];
             $permissions[self::PERMISSION_BULKEDIT_ASSETS] = [
-                'label' => Craft::t('venveo-bulk-edit', 'user-permissions-edit-assets'),
+                'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Assets'),
             ];
             $permissions[self::PERMISSION_BULKEDIT_CATEGORIES] = [
-                'label' => Craft::t('venveo-bulk-edit', 'user-permissions-edit-categories'),
+                'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Categories'),
             ];
             $permissions[self::PERMISSION_BULKEDIT_USERS] = [
-                'label' => Craft::t('venveo-bulk-edit', 'user-permissions-edit-users'),
+                'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Users'),
             ];
 
             if (Craft::$app->plugins->isPluginInstalled('commerce')) {
                 $permissions[self::PERMISSION_BULKEDIT_PRODUCTS] = [
-                    'label' => Craft::t('venveo-bulk-edit', 'user-permissions-edit-products'),
+                    'label' => Craft::t('venveo-bulk-edit', 'Bulk Edit Products'),
                 ];
             }
 
             $event->permissions[] = [
-                'heading' => Craft::t('venveo-bulk-edit', 'user-permissons-label'),
+                'heading' => Craft::t('venveo-bulk-edit', 'Bulk Edit'),
                 'permissions' => $permissions
             ];
         });
