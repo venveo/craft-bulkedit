@@ -9,6 +9,6 @@ class Replace implements FieldStrategyInterface
 {
     public static function displayName(): string
     {
-        return Craft::t('venveo-bulk-edit', 'Replace');
+        return Craft::t('venveo-bulk-edit', 'replace');
     }
 }

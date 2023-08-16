@@ -9,6 +9,6 @@ class Multiply implements FieldStrategyInterface
 {
     public static function displayName(): string
     {
-        return Craft::t('venveo-bulk-edit', 'Multiply');
+        return Craft::t('venveo-bulk-edit', 'multiply');
     }
 }

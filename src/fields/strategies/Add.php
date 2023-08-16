@@ -9,6 +9,6 @@ class Add implements FieldStrategyInterface
 {
     public static function displayName(): string
     {
-        return Craft::t('venveo-bulk-edit', 'Add');
+        return Craft::t('venveo-bulk-edit', 'add');
     }
 }

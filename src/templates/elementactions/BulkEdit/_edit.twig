@@ -10,14 +10,14 @@
             {% endnamespace %}
             <div class="field-edit-modal-bar">
                 <div class="buttons right">
-                    <div class="btn" id="field-edit-cancel">{{ "Cancel"|t('venveo-bulk-edit') }}</div>
-                    <input type="button" value="Save {{ totalElements }} Elements" class="btn submit"></div>
+                    <div class="btn" id="field-edit-cancel">{{ "cancel"|t('venveo-bulk-edit') }}</div>
+                    <input type="button" value="{{ 'save-elements'|t('venveo-bulk-edit', params = {totalElements: totalElements}) }}" class="btn submit"></div>
             </div>
         {% else %}
-            <p>{{ "It doesn't look like there are any fields that support bulk editing on these elements."|t('venveo-bulk-edit') }}</p>
+            <p>{{ "edit-fields-warning"|t('venveo-bulk-edit') }}</p>
             <div class="field-edit-modal-bar">
                 <div class="buttons right">
-                    <div class="btn" id="field-edit-cancel">{{ "Cancel"|t('venveo-bulk-edit') }}</div>
+                    <div class="btn" id="field-edit-cancel">{{ "cancel"|t('venveo-bulk-edit') }}</div>
                 </div>
             </div>
         {% endif %}
