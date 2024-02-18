@@ -21,8 +21,13 @@
         }
     ],
     "require": {
-        "craftcms/cms": "^4.0.0",
+        "craftcms/cms": "^5.0.0-beta.1",
         "php": "^8.0.2"
+    },
+    "require-dev": {
+        "craftcms/phpstan": "dev-main",
+        "craftcms/ecs": "dev-main",
+        "craftcms/rector": "dev-main"
     },
     "autoload": {
         "psr-4": {
@@ -32,8 +37,7 @@
     "extra": {
         "name": "Bulk Edit",
         "handle": "venveo-bulk-edit",
-        "changelogUrl": "https://raw.githubusercontent.com/venveo/craft-bulkedit/master/CHANGELOG.md",
-        "class": "venveo\\bulkedit\\Plugin"
+        "changelogUrl": "https://raw.githubusercontent.com/venveo/craft-bulkedit/master/CHANGELOG.md"
     },
     "config": {
         "sort-packages": true,

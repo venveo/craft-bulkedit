@@ -114,7 +114,7 @@ class Plugin extends BasePlugin
                 }
 
                 if (Craft::$app->user->checkPermission(self::PERMISSION_BULKEDIT_PRODUCTS)) {
-                    if (Craft::$app->plugins->isPluginInstalled('commerce') && class_exists(Product::class)) {
+                    if (Craft::$app->plugins->isPluginInstalled('commerce') && class_exists('\craft\commerce\elements\Product')) {
                         Event::on(Product::class, Element::EVENT_REGISTER_ACTIONS,
                             function (RegisterElementActionsEvent $event) {
                                 $event->actions[] = BulkEditElementAction::class;
