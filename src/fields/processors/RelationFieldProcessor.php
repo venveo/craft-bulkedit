@@ -46,7 +46,7 @@ class RelationFieldProcessor extends AbstractFieldProcessor
         $originalValue = $element->getFieldValue($field->handle);
         $fieldHandle = $field->handle;
         $ids = $originalValue->ids();
-        $ids = array_merge($ids, $value);
+        $ids = array_merge($ids, is_array($value) ? $value : [$value]);
 
         $element->setFieldValue($fieldHandle, $ids);
     }
