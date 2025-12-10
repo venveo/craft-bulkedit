@@ -13,6 +13,9 @@ class FieldConfig extends Model
     /** @var int|null If we have a field ID, store it here */
     public ?int $fieldId = null;
 
+    /** @var int|null $layoutId we need to store the layout of the field for the correct handle later */
+    public ?int $layoutId = null;
+
     /**
      * @var string|null
      * @see \venveo\bulkedit\enums\FieldType

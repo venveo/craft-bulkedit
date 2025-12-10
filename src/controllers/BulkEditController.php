@@ -19,7 +19,6 @@ use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
-use craft\records\Field;
 use craft\web\Response;
 use Exception;
 use Twig\Error\LoaderError;
@@ -118,14 +117,43 @@ class BulkEditController extends ElementIndexesController
 
         $fields = $this->request->getRequiredParam('fieldConfig');
         $namespace = $this->request->getRequiredParam('namespace');
-        $enabledFields = array_filter($fields, fn($field) => $field['enabled']);
-        $fields = Field::findAll(array_keys($enabledFields));
+
+        $fieldsService = Craft::$app->getFields();
         $fieldModels = [];
-        /** @var Field $field */
+
         foreach ($fields as $field) {
-            $fieldModel = Craft::$app->fields->getFieldById($field->id);
-            if ($fieldModel && Plugin::$plugin->bulkEdit->isFieldSupported($fieldModel)) {
-                $fieldModels[] = $fieldModel;
+            if(!$field['enabled']) {
+                continue;
+            }
+
+            $fieldId = (int)$field['id'];
+            $layoutIds = $field['layoutIds'];
+            foreach ($layoutIds as $layoutId) {
+                $layout = $fieldsService->getLayoutById($layoutId);
+                if(!$layout){
+                    continue;
+                }
+
+                $layoutField = $layout->getFieldById($fieldId);
+                if(!$layoutField || !Plugin::$plugin->bulkEdit->isFieldSupported($layoutField)){
+                    continue;
+                }
+                // due to current restrictions of field namespaces we cannot add the very same field with the same handle twice
+                // otherwise we need to render 2 separate field layouts and pass two different namespace params.
+                //
+                // I tried to include another layout but failed unfortunately (in a reasonable amount of time)
+                // so as of now this only works for one field for all field layouts
+                //
+                // This will currently break in case users select two elements with a different layout where one
+                // field is instance of A and another field with the very same handle is instance of B while the two
+                // field types are incompatible to each other
+                // the only way to solve this is to render two separate fields and separate their handles
+                // (eg include the layout ID into the handle and regex it)
+                /** @see \venveo\bulkedit\services\BulkEdit::processElementWithContext */
+                if(isset($fieldModels[$layoutField->handle])){
+                    continue;
+                }
+                $fieldModels[$layoutField->handle] = $layoutField;
             }
         }
 
@@ -189,23 +217,44 @@ class BulkEditController extends ElementIndexesController
 
         $fieldConfigData = $this->request->getRequiredParam('fieldConfig');
 
+        $fieldService = Craft::$app->getFields();
         $fieldConfigs = [];
         foreach ($fieldConfigData as $fieldConfigDatum) {
             if (!$fieldConfigDatum['enabled']) {
                 continue;
             }
+
             $fieldConfig = new FieldConfig();
             $fieldConfig->strategy = $fieldConfigDatum['strategy'];
             $fieldConfig->type = $fieldConfigDatum['type'];
-            if ($fieldConfig->type === FieldType::CustomField) {
-                $fieldConfig->fieldId = (int)$fieldConfigDatum['id'];
-                $fieldConfig->handle = Craft::$app->fields->getFieldById($fieldConfig->fieldId)->handle;
-                $fieldConfig->serializedValue = Json::encode($fieldValues[$fieldConfig->handle]);
-            }
+            if ($fieldConfig->type !== FieldType::CustomField) {
             if ($fieldConfig->validate()) {
                 $fieldConfigs[] = $fieldConfig;
-            } else {
+                    continue;
+                }
                 throw new \Exception('Failed to validate field configuration: ' . Json::encode($fieldConfig));
+            }
+
+            $layoutIds = $fieldConfigDatum['layoutIds'];
+            foreach ($layoutIds as $layoutId) {
+                $fieldConfigForLayout = clone $fieldConfig;
+
+                $fieldConfigForLayout->fieldId = (int)$fieldConfigDatum['id'];
+
+                $layout = $fieldService->getLayoutById($layoutId);
+                if(!$layout){
+                    continue;
+                }
+
+                $field = $layout->getFieldById($fieldConfigDatum['id']);
+                if(!$field){
+                    continue;
+                }
+
+                $fieldConfigForLayout->handle = $field->handle;
+                $fieldConfigForLayout->layoutId = $layoutId;
+                $fieldConfigForLayout->serializedValue = Json::encode($fieldValues[$fieldConfigForLayout->handle]);
+                $fieldConfigs[] = $fieldConfigForLayout;
             }
         }
 

@@ -198,10 +198,17 @@ class BulkEdit extends Component
         // We'll process the entire element in a transaction to help avoid problems
         $transaction = Craft::$app->getDb()->beginTransaction();
         $fieldConfigs = $contextModel->fieldConfigs;
+        $fieldService = Craft::$app->getFields();
         try {
             foreach ($fieldConfigs as $fieldConfig) {
                 $newValue = Json::decode($fieldConfig->serializedValue);
-                $field = Craft::$app->fields->getFieldById($fieldConfig->fieldId);
+
+                // grab the field layout instance in the layout
+                if($fieldConfig->layoutId && $fieldConfig->handle){
+                    $field = $fieldService->getLayoutById($fieldConfig->layoutId)?->getFieldByHandle($fieldConfig->handle);
+                } else {
+                    $field = Craft::$app->fields->getFieldById($fieldConfig->fieldId);
+                }
                 $processor = $this->getFieldProcessor($field, $fieldConfig->strategy);
                 $processor::processElementField($element, $field, $fieldConfig->strategy, $newValue);
                 Craft::info('Saved history item', __METHOD__);

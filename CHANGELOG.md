@@ -1,5 +1,17 @@
 # Bulk Edit Changelog
 
+## Unreleased
+
+### added
+
+- added new param `layoutId` to `venveo\bulkedit\models\FieldConfig` to store the fields layout id 
+- added `layoutIds` hidden field in `templates/elementactions/BulkEdit/_fields.twig`
+- added a regex to pass the new layoutId param in `assetbundles/bulkeditelementaction/dist/js/BulkEditModal.js`
+
+### changed
+
+- always fields from layout and not from global fields
+
 ## 5.0.0-beta.1 - 2024-09-26
 
 > [!IMPORTANT]

@@ -47,6 +47,9 @@
                         {% set fieldUnsupported = true %}
                     {% endif %}
                     {{ hiddenInput('fields['~field.id~'][type]', 'CustomField') }}
+                    {% for layout in fieldWrapper.layouts %}
+                        {{ hiddenInput('fields['~field.id~'][layoutIds][]', layout.id) }}
+                    {% endfor %}
                     <tr>
                         <td>
             <span>

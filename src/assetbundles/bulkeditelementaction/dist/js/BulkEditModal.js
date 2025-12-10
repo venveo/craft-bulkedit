@@ -202,6 +202,12 @@ Craft.BulkEditModal = Garnish.Modal.extend({
         _getFieldConfig: function(formData) {
             var formDataObject = {};
             const fieldHandleRegex = /fields\[(\d+)\]\[(.+)\]/;
+
+            // with Craft 5 ability to rename fields + relabel fields
+            // we need to add the field layout id and grab the field from the layout
+            // not from global fields -> additional regex to grab the layout ids
+            const layoutIdRegex = /fields\[(\d+)\]\[layoutIds\]\[\]/;
+
             formData.forEach((value, key) => {
                 const fieldHandle = key.match(fieldHandleRegex)[1]
                 const propertyName = key.match(fieldHandleRegex)[2]
@@ -210,7 +216,19 @@ Craft.BulkEditModal = Garnish.Modal.extend({
                         id: fieldHandle
                     }
                 }
-                formDataObject[fieldHandle][propertyName] = value
+
+                // check if it's the nested layoutIds array
+                const layoutIdMatch = key.match(layoutIdRegex);
+                if(layoutIdMatch && layoutIdMatch.length >= 1){
+                    if(!formDataObject[fieldHandle].hasOwnProperty('layoutIds')) {
+                        formDataObject[fieldHandle]['layoutIds'] = []
+                    }
+
+                    formDataObject[fieldHandle]['layoutIds'].push(Number.parseInt(value));
+                } else {
+                    formDataObject[fieldHandle][propertyName] = value
+                }
+
             });
             return formDataObject
         },
