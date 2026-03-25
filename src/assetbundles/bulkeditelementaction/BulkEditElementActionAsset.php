@@ -16,7 +16,7 @@ class BulkEditElementActionAsset extends AssetBundle
     public function init(): void
     {
         // define the path that your publishable resources live
-        $this->sourcePath = __DIR__ . '/dist';
+        $this->sourcePath = '@venveo/bulkedit/assetbundles/bulkeditelementaction/dist';
 
         // define the dependencies
         $this->depends = [
