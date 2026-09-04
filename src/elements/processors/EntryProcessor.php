@@ -5,6 +5,7 @@ namespace venveo\bulkedit\elements\processors;
 use Craft;
 use craft\base\Element;
 use craft\elements\Entry;
+use craft\fields\Matrix;
 use craft\models\FieldLayout;
 use craft\web\User;
 use venveo\bulkedit\base\AbstractElementTypeProcessor;
@@ -74,10 +75,57 @@ class EntryProcessor extends AbstractElementTypeProcessor
      */
     public static function getMockElement($elementIds = [], $params = []): Element
     {
-        $elementPlaceholder = parent::getMockElement($elementIds, $params);
-        $templateEntry = Craft::$app->entries->getEntryById($elementIds[0], $params['siteId']);
-        $elementPlaceholder->typeId = $templateEntry->typeId;
-        $elementPlaceholder->sectionId = $templateEntry->sectionId;
+        if (empty($elementIds)) {
+            return parent::getMockElement($elementIds, $params);
+        }
+
+        $templateEntry = Craft::$app->entries->getEntryById(
+            (int)$elementIds[0],
+            $params['siteId'] ?? null,
+        );
+
+        if (!$templateEntry) {
+            return parent::getMockElement($elementIds, $params);
+        }
+
+        // Craft 5 stores Matrix blocks as nested entries. Their input needs
+        // an owner ID, while the old placeholder is a new unsaved entry.
+        $elementPlaceholder = clone $templateEntry;
+        self::clearSelectedFieldValues($elementPlaceholder);
+
         return $elementPlaceholder;
+    }
+
+    private static function clearSelectedFieldValues(Element $element): void
+    {
+        $request = Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            return;
+        }
+
+        $fieldConfigs = $request->getBodyParam('fieldConfig', []);
+        if (!is_array($fieldConfigs)) {
+            return;
+        }
+
+        foreach ($fieldConfigs as $fieldConfig) {
+            if (!is_array($fieldConfig) || empty($fieldConfig['enabled'])) {
+                continue;
+            }
+
+            $fieldId = (int)($fieldConfig['id'] ?? 0);
+            if (!$fieldId) {
+                continue;
+            }
+
+            $field = Craft::$app->getFields()->getFieldById($fieldId);
+            if (!$field) {
+                continue;
+            }
+
+            // Matrix normalizes null into the owner's existing entries. An
+            // empty string explicitly gives the editor an empty collection.
+            $element->setFieldValue($field->handle, $field instanceof Matrix ? '' : null);
+        }
     }
 }
