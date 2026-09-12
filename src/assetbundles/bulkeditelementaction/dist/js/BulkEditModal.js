@@ -201,16 +201,18 @@ Craft.BulkEditModal = Garnish.Modal.extend({
 
         _getFieldConfig: function(formData) {
             var formDataObject = {};
-            const fieldHandleRegex = /fields\[(\d+)\]\[(.+)\]/;
+            const fieldHandleRegex = /fields\[([^\]]+)\]\[([^\]]+)\]/;
             formData.forEach((value, key) => {
-                const fieldHandle = key.match(fieldHandleRegex)[1]
-                const propertyName = key.match(fieldHandleRegex)[2]
-                if (!formDataObject.hasOwnProperty(fieldHandle)) {
-                    formDataObject[fieldHandle] = {
-                        id: fieldHandle
-                    }
+                const matches = key.match(fieldHandleRegex)
+                if (!matches) {
+                    return
                 }
-                formDataObject[fieldHandle][propertyName] = value
+                const fieldKey = matches[1]
+                const propertyName = matches[2]
+                if (!Object.prototype.hasOwnProperty.call(formDataObject, fieldKey)) {
+                    formDataObject[fieldKey] = {}
+                }
+                formDataObject[fieldKey][propertyName] = value
             });
             return formDataObject
         },
