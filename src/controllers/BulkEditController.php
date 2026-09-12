@@ -19,7 +19,6 @@ use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
-use craft\records\Field;
 use craft\web\Response;
 use Exception;
 use Twig\Error\LoaderError;
@@ -119,13 +118,19 @@ class BulkEditController extends ElementIndexesController
         $fields = $this->request->getRequiredParam('fieldConfig');
         $namespace = $this->request->getRequiredParam('namespace');
         $enabledFields = array_filter($fields, fn($field) => $field['enabled']);
-        $fields = Field::findAll(array_keys($enabledFields));
         $fieldModels = [];
-        /** @var Field $field */
-        foreach ($fields as $field) {
-            $fieldModel = Craft::$app->fields->getFieldById($field->id);
+        foreach ($enabledFields as $fieldConfig) {
+            $fieldId = (int)($fieldConfig['id'] ?? 0);
+            if (!$fieldId) {
+                continue;
+            }
+
+            $fieldModel = Craft::$app->fields->getFieldById($fieldId);
             if ($fieldModel && Plugin::$plugin->bulkEdit->isFieldSupported($fieldModel)) {
-                $fieldModels[] = $fieldModel;
+                $fieldModels[] = [
+                    'field' => $fieldModel,
+                    'handle' => $fieldConfig['handle'] ?? null,
+                ];
             }
         }
 
@@ -145,13 +150,17 @@ class BulkEditController extends ElementIndexesController
         $fieldLayoutTab->name = 'Content';
         $fieldLayoutTab->uid = 'content';
 
-        foreach ($fieldModels as $fieldModel) {
+        foreach ($fieldModels as $fieldData) {
+            $fieldModel = $fieldData['field'];
             $fieldLayoutElement = new CustomField();
             // Craft 5 allows a field to have a handle override in a field
-            // layout. Use the field instance from the placeholder's layout
-            // so the form reads/writes the layout handle (e.g. triggerDate)
-            // instead of the global field handle (e.g. dateTime).
-            $fieldLayoutField = $elementPlaceholder->getFieldLayout()?->getFieldById($fieldModel->id);
+            // layout. Preserve the handle selected in the field selector so
+            // duplicate uses of the same field ID remain distinct.
+            $fieldLayoutField = null;
+            if ($fieldData['handle']) {
+                $fieldLayoutField = $elementPlaceholder->getFieldLayout()?->getFieldByHandle($fieldData['handle']);
+            }
+            $fieldLayoutField ??= $elementPlaceholder->getFieldLayout()?->getFieldById($fieldModel->id);
             $fieldLayoutElement->setField($fieldLayoutField ?? $fieldModel);
             $fieldLayoutElements[] = $fieldLayoutElement;
         }
@@ -206,9 +215,16 @@ class BulkEditController extends ElementIndexesController
             if ($fieldConfig->type === FieldType::CustomField) {
                 $fieldConfig->fieldId = (int)$fieldConfigDatum['id'];
                 $field = Craft::$app->fields->getFieldById($fieldConfig->fieldId);
-                $fieldLayoutField = $sourceElement?->getFieldLayout()?->getFieldById($fieldConfig->fieldId);
-                $fieldConfig->handle = ($fieldLayoutField ?? $field)->handle;
-                $fieldConfig->serializedValue = Json::encode($fieldValues[$fieldConfig->handle]);
+                $sourceLayoutField = $sourceElement?->getFieldLayout()?->getFieldById($fieldConfig->fieldId);
+                $selectedHandle = $fieldConfigDatum['handle'] ?? null;
+                $selectedLayoutField = $selectedHandle
+                    ? $sourceElement?->getFieldLayout()?->getFieldByHandle($selectedHandle)
+                    : null;
+                $fieldConfig->handle = $selectedHandle ?? ($sourceLayoutField ?? $field)->handle;
+                $formHandle = ($selectedLayoutField?->id === $fieldConfig->fieldId)
+                    ? $selectedLayoutField->handle
+                    : ($sourceLayoutField ?? $field)->handle;
+                $fieldConfig->serializedValue = Json::encode($fieldValues[$formHandle]);
             }
             if ($fieldConfig->validate()) {
                 $fieldConfigs[] = $fieldConfig;

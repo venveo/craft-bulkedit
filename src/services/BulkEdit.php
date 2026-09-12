@@ -198,23 +198,36 @@ class BulkEdit extends Component
         // We'll process the entire element in a transaction to help avoid problems
         $transaction = Craft::$app->getDb()->beginTransaction();
         $fieldConfigs = $contextModel->fieldConfigs;
+        $fieldProcessed = false;
         try {
             foreach ($fieldConfigs as $fieldConfig) {
                 $newValue = Json::decode($fieldConfig->serializedValue);
-                $field = Craft::$app->fields->getFieldById($fieldConfig->fieldId);
-                // A field can have a layout-specific handle in Craft 5.
-                // Resolve the field from each target element's layout before
-                // processing it so values are saved to the correct handle.
-                $field = $element->getFieldLayout()?->getFieldById($field->id) ?? $field;
+                $globalField = Craft::$app->fields->getFieldById($fieldConfig->fieldId);
+                if (!$globalField) {
+                    continue;
+                }
+
+                // A field can have a layout-specific handle in Craft 5. Use
+                // the handle selected by the editor, and do not apply the
+                // value to a different layout instance of the same field ID.
+                $field = $fieldConfig->handle
+                    ? $element->getFieldLayout()?->getFieldByHandle($fieldConfig->handle)
+                    : null;
+                if ($field?->id !== $globalField->id) {
+                    continue;
+                }
                 $processor = $this->getFieldProcessor($field, $fieldConfig->strategy);
                 $processor::processElementField($element, $field, $fieldConfig->strategy, $newValue);
+                $fieldProcessed = true;
                 Craft::info('Saved history item', __METHOD__);
             }
 
-            $element->setScenario(Element::SCENARIO_ESSENTIALS);
-            Craft::$app->elements->saveElement($element, false);
+            if ($fieldProcessed) {
+                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                Craft::$app->elements->saveElement($element, false);
 
-            Craft::info('Saved element', __METHOD__);
+                Craft::info('Saved element', __METHOD__);
+            }
             $transaction->commit();
             return $element;
         } catch (Exception $exception) {

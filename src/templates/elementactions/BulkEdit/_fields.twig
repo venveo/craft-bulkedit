@@ -42,11 +42,14 @@
                 {# fieldWrapper  #}
                 {% for fieldWrapper in fieldWrappers %}
                     {% set field = fieldWrapper.field %}
+                    {% set fieldKey = field.handle %}
                     {% set fieldUnsupported = false %}
                     {% if not bulkedit.isFieldSupported(field) %}
                         {% set fieldUnsupported = true %}
                     {% endif %}
-                    {{ hiddenInput('fields['~field.id~'][type]', 'CustomField') }}
+                    {{ hiddenInput('fields['~fieldKey~'][id]', field.id) }}
+                    {{ hiddenInput('fields['~fieldKey~'][handle]', field.handle) }}
+                    {{ hiddenInput('fields['~fieldKey~'][type]', 'CustomField') }}
                     <tr>
                         <td>
             <span>
@@ -58,8 +61,8 @@
                         <td>
             <span>
                 {{ forms.lightswitchField({
-                    id: 'fieldEnabled-'~field.handle,
-                    name: 'fields['~field.id~'][enabled]',
+                    id: 'fieldEnabled-'~fieldKey,
+                    name: 'fields['~fieldKey~'][enabled]',
                     on: false,
                     disabled: fieldUnsupported,
                     value: true,
@@ -69,8 +72,8 @@
                         <td>
                               <span>
             {{ forms.selectField({
-                id: 'fieldStrategy-'~field.handle,
-                name: 'fields['~field.id~'][strategy]',
+                id: 'fieldStrategy-'~fieldKey,
+                name: 'fields['~fieldKey~'][strategy]',
                 disabled: fieldUnsupported,
                 options: bulkedit.getSupportedStrategiesForField(field),
                 default: 'replace',
