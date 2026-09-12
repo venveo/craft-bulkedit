@@ -147,7 +147,12 @@ class BulkEditController extends ElementIndexesController
 
         foreach ($fieldModels as $fieldModel) {
             $fieldLayoutElement = new CustomField();
-            $fieldLayoutElement->setField($fieldModel);
+            // Craft 5 allows a field to have a handle override in a field
+            // layout. Use the field instance from the placeholder's layout
+            // so the form reads/writes the layout handle (e.g. triggerDate)
+            // instead of the global field handle (e.g. dateTime).
+            $fieldLayoutField = $elementPlaceholder->getFieldLayout()?->getFieldById($fieldModel->id);
+            $fieldLayoutElement->setField($fieldLayoutField ?? $fieldModel);
             $fieldLayoutElements[] = $fieldLayoutElement;
         }
         $fieldLayoutTab->setElements($fieldLayoutElements);
@@ -188,6 +193,7 @@ class BulkEditController extends ElementIndexesController
         $fieldValues = $namespacedValues[$namespace]['fields'];
 
         $fieldConfigData = $this->request->getRequiredParam('fieldConfig');
+        $sourceElement = $this->getElementQuery()->one();
 
         $fieldConfigs = [];
         foreach ($fieldConfigData as $fieldConfigDatum) {
@@ -199,7 +205,9 @@ class BulkEditController extends ElementIndexesController
             $fieldConfig->type = $fieldConfigDatum['type'];
             if ($fieldConfig->type === FieldType::CustomField) {
                 $fieldConfig->fieldId = (int)$fieldConfigDatum['id'];
-                $fieldConfig->handle = Craft::$app->fields->getFieldById($fieldConfig->fieldId)->handle;
+                $field = Craft::$app->fields->getFieldById($fieldConfig->fieldId);
+                $fieldLayoutField = $sourceElement?->getFieldLayout()?->getFieldById($fieldConfig->fieldId);
+                $fieldConfig->handle = ($fieldLayoutField ?? $field)->handle;
                 $fieldConfig->serializedValue = Json::encode($fieldValues[$fieldConfig->handle]);
             }
             if ($fieldConfig->validate()) {

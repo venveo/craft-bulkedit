@@ -202,6 +202,10 @@ class BulkEdit extends Component
             foreach ($fieldConfigs as $fieldConfig) {
                 $newValue = Json::decode($fieldConfig->serializedValue);
                 $field = Craft::$app->fields->getFieldById($fieldConfig->fieldId);
+                // A field can have a layout-specific handle in Craft 5.
+                // Resolve the field from each target element's layout before
+                // processing it so values are saved to the correct handle.
+                $field = $element->getFieldLayout()?->getFieldById($field->id) ?? $field;
                 $processor = $this->getFieldProcessor($field, $fieldConfig->strategy);
                 $processor::processElementField($element, $field, $fieldConfig->strategy, $newValue);
                 Craft::info('Saved history item', __METHOD__);

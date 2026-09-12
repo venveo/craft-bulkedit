@@ -1,5 +1,11 @@
 # Bulk Edit Changelog
 
+## Unreleased
+
+### Fixed
+
+- Fixed fields with layout-specific handle overrides being rendered and saved with the wrong handle.
+
 ## 5.0.0-beta.1 - 2024-09-26
 
 > [!IMPORTANT]
