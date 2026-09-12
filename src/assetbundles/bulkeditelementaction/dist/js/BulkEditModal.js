@@ -209,7 +209,7 @@ Craft.BulkEditModal = Garnish.Modal.extend({
                 }
                 const fieldKey = matches[1]
                 const propertyName = matches[2]
-                if (!formDataObject.hasOwnProperty(fieldKey)) {
+                if (!Object.prototype.hasOwnProperty.call(formDataObject, fieldKey)) {
                     formDataObject[fieldKey] = {}
                 }
                 formDataObject[fieldKey][propertyName] = value
