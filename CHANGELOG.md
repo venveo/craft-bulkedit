@@ -1,5 +1,11 @@
 # Bulk Edit Changelog
 
+## Unreleased
+
+### Fixed
+
+- Fixed bulk editing Matrix fields on Craft 5 by rendering their inputs with a saved entry owner.
+
 ## 5.0.0-beta.1 - 2024-09-26
 
 > [!IMPORTANT]
